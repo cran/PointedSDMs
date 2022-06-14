@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Philip Mostert" />
+
+<meta name="date" content="2022-06-12" />
+
+<title>Setophaga example</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Setophaga example</h1>
+<h4 class="author">Philip Mostert</h4>
+<h4 class="date">2022-06-12</h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Predicting the distribution of species across space and time is a
+fundamental piece for answering a multitude of questions surrounding the
+field of ecology. Consequentially, numerous statistical tools have been
+developed to assist ecologists in making these types of predictions; the
+most common of which is certainly species distribution models
+(SDMs).</p>
+<p>These types of models are heavily reliant on the quality and quantity
+of data available across multiple time periods in order to produce
+meaningful results. Thankfully, the <span class="math inline">\(21^{st}\)</span> century has been associated with
+a boom in digital technology and the collapse of data storage costs
+achieved, allowing us to see data on the environment and species
+occurrences grow at unprecedented rates. The problem however is that all
+these data are disparate in nature; they all have their own sampling
+protocols, assumptions and attributes, making joint analysis of them
+difficult.</p>
+<p>On account of this issue, the field of integrated species
+distribution modelling has progressed considerably over the last few
+years – and now the associated methods are well-developed, and the
+benefits of using such models (over single dataset or simple
+data-pooling models) are apparent.</p>
+<p>A major handicap to integrated modeling lies in the fact that the
+tools required to make inference with these models have not been
+established – especially with regards to general software to be used by
+ecologists. This in turn has stagnated the growth of applying these
+models to real data.</p>
+<p>In light of this impediment to the field of integrated modelling, we
+decided to make <em>PointedSDMs</em>, an <em>R</em> package to help
+simplify the modelling process of integrated species distribution models
+(ISDMs) for ecologists. It does so by using the <em>INLA</em> framework
+<span class="citation">(Rue, Martino, and Chopin 2009)</span> to
+approximate the models and by constructing wrapper functions around
+those provided in the <em>R</em> package, <em>inlabru</em> <span class="citation">(Bachl et al. 2019)</span>.</p>
+<p>This <em>R markdown</em> file illustrates an example of modelling an
+ISDM with <em>PointedSDMs,</em> using five disparate datasets containing
+species <em>Setophaga</em> collected around Pennsylvania state (United
+States of America). The first part of this file contains a brief
+introduction to the statistical model used in ISDMs, as well as an
+introduction to the included functions in the package. The second part
+of this file uses <em>PointedSDMs</em> to run the ISDM for the provided
+data. We note that, for this particular vignette, no inference was made
+due to computational intensity of the model. However the <em>R</em>
+script and data are provided below so that the user may carry out
+inference.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="do">##Install if need be</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(PointedSDMs)</span></code></pre></div>
+<div id="statistical-model" class="section level3">
+<h3>Statistical model</h3>
+<p>The goal of our statistical model is to infer the “true” distribution
+of our species’ using the observations we have at hand, as well as
+environmental covariates describing the studied area, <span class="math inline">\(\boldsymbol{X}\)</span>, and other parameters
+describing the species, <span class="math inline">\(\boldsymbol{\theta}\)</span>. To do so, we
+construct a hierarchical state-space model composing of two parts: the
+underlying process model as well as observation models.</p>
+<p>The process model is a stochastic process which describes how the
+points are distributed in space. The most commonly assumed process model
+is the Log-Gaussian Cox process (LGCP), which is characterized by the
+intensity function <span class="math inline">\(\lambda(s)\)</span>: such
+that a higher a higher intensity at a location implies the species is
+more abundant there, as well as a Gaussian random field used to account
+for all the environmental covariates not included in the model.</p>
+<p>The observation models give a statistical description of the data
+collection process, and are chosen for each dataset based on their
+underlying sampling protocols (see <span class="citation">(Isaac et al.
+2020)</span> for a detailed review of the types of observation models
+typically used in integrated models). As a result, we can write the
+likelihood of the observation model for a given dataset, <span class="math inline">\(Y_i\)</span> as <span class="math inline">\(\mathcal{L} \left( Y_i \mid \lambda(s), \theta_i
+\right)\)</span>.</p>
+<p>Therefore, given a collection of heterogeneous datasets <span class="math inline">\(\{Y_1, Y_2,...,Y_n\}\)</span>, the full-likelihood
+of the statistical process is given by:<span class="math display">\[\mathcal{L} \left( \boldsymbol{Y} \mid
+\boldsymbol{X}, \boldsymbol{\theta}, \boldsymbol{\phi} \right) = p\left(
+\lambda(s), \boldsymbol{X}, \boldsymbol{\phi} \right) \times
+\prod_{i=1}^n \mathcal{L} \left(Y_i \mid \lambda(s),
+\theta_i\right),\]</span>where <span class="math inline">\(\boldsymbol\phi\)</span> are parameters assumed
+for the underlying process.</p>
+</div>
+<div id="package-use" class="section level3">
+<h3>Package use</h3>
+<p><em>PointedSDMs</em> is designed to simplify the modelling process of
+integrated species distribution models by using wrapper functions around
+those found in <em>R-INLA</em> and <em>inlabru</em>. The simplification
+is regarding four key steps in the statistical-modelling process:</p>
+<ul>
+<li><p>data preparation,</p></li>
+<li><p>model fitting,</p></li>
+<li><p>cross-validation,</p></li>
+<li><p>prediction.</p></li>
+</ul>
+<p>The first function of interest with regards to these steps is
+<code>intModel</code>, which is designed to create objects required by
+<em>inlabru</em>, assign the relevant information to individual objects
+used in model specification, as well as structure the provided datasets
+together into a homogenized framework.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(intModel)</span></code></pre></div>
+<p>The output of this function is an <em>R6</em> object, and so there
+are several slot functions included to help specify the model at a finer
+scale. Use <code>?dataSDM</code> to get a comprehensive description of
+these slot functions.</p>
+<p>The next function used is <code>runModel</code> which takes the data
+object created with <code>intModel</code> and runs the integrated model.
+The output of this function is in essence an <em>inlabru</em> model
+output with additional information to be used by the sequential
+functions.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(runModel)</span></code></pre></div>
+<p>Spatial blocked cross-validation may be performed using the
+<code>blockedCV</code> function – which iteratively calculates and
+averages the deviance information criteria (DIC) for models run without
+data from the selected spatial block. Before this function is used,
+<code>.$spatialBlock()</code> from the object produced by
+<code>intModel</code> is required in order to specify how the data
+should be spatially blocked (see below for an example).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(blockedCV)</span></code></pre></div>
+<p><code>datasetOut</code> provides cross-validation for integrated
+models by running the full model with one less dataset, and calculating
+a score measuring the relative importance of the left out dataset in the
+full model.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(datasetOut)</span></code></pre></div>
+<p>Finally prediction of the full model may be completed using the
+<code>predict</code> function; the arguments here are mostly related to
+specifying which components are required to be predicted, however the
+function can act identically to the <em>inlabru</em>
+<code>predict</code> function if need be. After predictions are
+complete, plots may be made using the generic <code>plot</code>
+function.</p>
+</div>
+<div id="setophaga-example" class="section level2">
+<h2><em>Setophaga</em> example</h2>
+<p>This example aims to predict the distribution of three species of
+genus <em>setophaga</em> across Pennsylvania state. This example is
+notable in integrated modelling since it has been used by two seminal
+papers in the field, namely those by: <span class="citation">Isaac et
+al. (2020)</span> and <span class="citation">Miller et al.
+(2019)</span>. This file extends the example by adding two additional
+datasets containing a further two species.</p>
+<div id="model-preparations" class="section level3">
+<h3>Model preparations</h3>
+<p>The first step in our analysis is to load in the packages
+required.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(INLA)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(inlabru)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(USAboundaries)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(raster)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rasterVis)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggmap)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sn)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div id="species-occurrence-data" class="section level4">
+<h4>Species occurrence data</h4>
+<p>The data necessary for this example is located within the package,
+and can be obtained with:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&#39;SetophagaData&#39;</span>)</span></code></pre></div>
+<p>For our analysis, we used five datasets containing the geocoded
+locations of our studed species’. The three present only datasets were
+obtained from the following github repository: <a href="https://github.com/oharar/IM_warbler" class="uri">https://github.com/oharar/IM_warbler</a>, who in turn
+obtained their data via the <em>spocc</em> <span class="citation">(Chamberlain 2021)</span> package, which is a toolkit
+to obtain species’ observation data from a selection of popular online
+data repositories (<em>GBIF</em>, <em>Vernet</em>, <em>BISON</em>,
+<em>iNaturalist</em> and <em>eBird</em>).</p>
+<p>Their script was slightly adapted to obtain observations from the
+species, <em>magnolia</em> and <em>fusca</em>; however the script to
+obtain the presence only datasets (<em>eBird_caerulescens</em>,
+<em>eBird_fusca, eBird_magnolia)</em> remains fundamentally the same
+otherwise.</p>
+<p>The github repository noted above also contains two additional
+structured datasets (<em>BBA, BBS</em>), which were both assumed to be
+presence absence datasets in the study conducted by <span class="citation">Isaac et al. (2020)</span>, containing the variable,
+<em>NPres</em>, denoting the presence (or number of presences in the
+<em>BBS</em> dataset) at each sampling location. However, we changed the
+<em>NPres</em> variable name of the <em>BBS</em> dataset to
+<em>Counts</em> in order to consider it a counts dataset for
+illustrative purposes. No additional changes were made to the
+<em>BBA</em> dataset, and so it was considered a presence absence
+dataset as originally intended.<br />
+</p>
+<table>
+<colgroup>
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="45%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"><strong>Dataset name</strong></th>
+<th align="center">Sampling protocol</th>
+<th align="center"><strong>Number of observations</strong></th>
+<th align="center"><strong>Species name</strong></th>
+<th align="center"><strong>Source</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><em>BBS</em></td>
+<td align="center">Counts</td>
+<td align="center">45</td>
+<td align="center"><em>Caerulescens</em></td>
+<td align="center"><a href="https://www.pwrc.usgs.gov/bbs/" style="text-decoration: underline; color: rgb(252, 111, 9) !important;">North
+American Breeding Bird Survey</a></td>
+</tr>
+<tr class="even">
+<td align="center"><em>BBA</em></td>
+<td align="center">Detection/nondetection</td>
+<td align="center">5165</td>
+<td align="center"><em>Caerulescens</em></td>
+<td align="center"><a href="http://www.pabirdatlas.psu.edu/" style="text-decoration: underline; color: rgb(252, 111, 9) !important;">Pennsylvania
+Breeding Bird Atlas</a></td>
+</tr>
+<tr class="odd">
+<td align="center"><em>eBird_caerulescens</em></td>
+<td align="center">Present only</td>
+<td align="center">264</td>
+<td align="center"><em>Caerulescens</em></td>
+<td align="center"><a href="https://ebird.org/home" style="text-decoration: underline; color: rgb(252, 111, 9) !important;">eBird</a></td>
+</tr>
+<tr class="even">
+<td align="center"><em>eBird_magnolia</em></td>
+<td align="center">Present only</td>
+<td align="center">354</td>
+<td align="center"><em>Magnolia</em></td>
+<td align="center"><a href="https://ebird.org/home" style="text-decoration: underline; color: rgb(252, 111, 9) !important;">eBird</a></td>
+</tr>
+<tr class="odd">
+<td align="center"><em>eBird_fusca</em></td>
+<td align="center">Present only</td>
+<td align="center">217</td>
+<td align="center"><em>Fusca</em></td>
+<td align="center"><a href="https://ebird.org/home" style="text-decoration: underline; color: rgb(252, 111, 9) !important;">eBird</a></td>
+</tr>
+</tbody>
+</table>
+<p>Table 1: Table illustrating the different datasets used in the
+analysis.</p>
+</div>
+<div id="covariate-data" class="section level4">
+<h4>Covariate data</h4>
+<p>Species distribution models study the relationship between our
+in-situ species observations and the underlying environment, and so in
+line with the study conducted by <span class="citation">Isaac et al.
+(2020)</span>, we considered two covariates: <em>elevation</em>,
+describing the height above sea level (meters) and <em>canopy</em>,
+describing the proportion of tree canopy covered in the area. These two
+covariates were obtained from the <span class="citation">Hollister and
+Shah (2017)</span> and <span class="citation">Bocinsky et al.
+(2019)</span> R packages respectively. The script to obtain these
+spatial covariates is provided in the same github repository as the
+species occurrence data above; the only thing we did differently was
+keep the covariates as a <em>Raster</em> object, whereas the above
+script converts them to <em>SpatialPixelsDataFrames</em>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">stack</span>(elev_raster, NLCD_canopy_raster))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(covariates) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;elevation&#39;</span>, <span class="st">&#39;canopy&#39;</span>)</span></code></pre></div>
+</div>
+<div id="additional-objects" class="section level4">
+<h4>Additional objects</h4>
+<p>Finally, additional objects required by <em>PointedSDMs</em> and the
+<em>R-INLA</em> <span class="citation">(Martins et al. 2013)</span> and
+<em>inlabru</em> <span class="citation">(Bachl et al. 2019)</span>
+packages need to be assembled.</p>
+<p>A <em>SpatialPolygons</em> object of Pennsylvania (obtained using the
+<em>USAboundaries</em> <span class="citation">(rOpenSci 2018)</span>
+package) is the first of these objects required, and it will be used to
+construct an <em>inla.mesh</em> object as well as help with the plotting
+of graphics. In order to create one of these polygons objects, we are
+first required to define the projection reference system (see
+<code>?CRS</code> ).</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>proj <span class="ot">&lt;-</span> <span class="fu">CRS</span>(<span class="st">&quot;+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> USAboundaries<span class="sc">::</span><span class="fu">us_states</span>(<span class="at">states =</span> <span class="st">&quot;Pennsylvania&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> PA<span class="sc">$</span>geometry[<span class="dv">1</span>]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> <span class="fu">as</span>(PA, <span class="st">&quot;Spatial&quot;</span>)</span></code></pre></div>
+<p>The <em>R-INLA</em> package requires a Delaunay triangulated mesh
+used to approximate our spatial random fields, which is created by
+supplying the <code>max.edge</code><em>,</em> <code>offset</code> and
+<code>cutoff</code> arguments as well as our <em>SpatialPolygons</em>
+map of Pennsylvania to the <code>inla.mesh.2d</code> function. With this
+mesh, <code>intModel</code> will create integration points required by
+our model using <em>inlabru</em>’s <code>ipoints</code> function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>mesh <span class="ot">&lt;-</span> <span class="fu">inla.mesh.2d</span>(<span class="at">boundary =</span> <span class="fu">inla.sp2segment</span>(PA), </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">cutoff =</span> <span class="fl">0.2</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">max.edge =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.24</span>), </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">offset =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.4</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>mesh<span class="sc">$</span>crs <span class="ot">&lt;-</span> proj</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>mesh_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>             <span class="fu">gg</span>(mesh) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>             <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of mesh&#39;</span>) <span class="sc">+</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>             <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>             <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>mesh_plot</span></code></pre></div>
+<div id="intmodel" class="section level5">
+<h5><code>intModel</code></h5>
+<p>The <code>intModel</code> function is the first step in the modeling
+of our species data. The aim of the function is to organize and
+standardize our data to ensure that each process is correctly modeled in
+the integrated framework. For this standardization to work, we specify
+the response variable names of the counts data
+(<code>responseCounts</code>) and present absence
+(<code>responsePA</code>), the coordinate names
+(<code>Coordinates</code>) as well as the coordinate reference system
+used (<code>Projection</code>). In addition, the species variable name
+(<code>speciesName</code>) was also specified in order to model the
+effects for the species found in the datasets.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>spatial_data <span class="ot">&lt;-</span> <span class="fu">intModel</span>(BBS, BBA, eBird_fusca, </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                        eBird_caerulescens, eBird_magnolia,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span></code></pre></div>
+<p>As mentioned above, there are some slot functions now inside the
+<code>spatial_data</code> objects, which allow for a finer level of
+customization of the components for the integrated model.</p>
+<div id="plot" class="section level6">
+<h6><code>.$plot</code></h6>
+<p>Let’s have a look at a graphical representation of the species’
+distribution, using the <code>.$plot()</code> function within
+<code>spatial_data</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg</span>(PA) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the datasets&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+<p>This will create a plot of the location of the species based on their
+dataset, however if we wanted to plot by species, we could specify this
+with the <code>Species = TRUE</code> argument.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Species =</span> <span class="cn">TRUE</span>, <span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg</span>(PA) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the species&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+</div>
+<div id="specifyspatial" class="section level6">
+<h6><code>.$specifySpatial</code></h6>
+<p>When conducting Bayesian analysis, the choice of prior distribution
+is imperative. In our example, we chose Penalizing complexity priors
+<span class="citation">(Simpson et al. 2017)</span>, which are designed
+to control the spatial range and marginal standard deviation in the
+GRF’s Matérn covariance function in order to reduce over-fitting in the
+model. This can be done with ease using the
+<code>.$specifySpatial</code> function, which will also update all the
+components associated with this field automatically.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="fl">0.01</span>),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>))</span></code></pre></div>
+</div>
+<div id="addbias" class="section level6">
+<h6><code>.$addBias</code></h6>
+<p>Presence only datasets (such as our <em>eBird</em> data) are often
+noted to contain numerous biases, which in turn can heavily skew results
+obtained from our model. A common approach to account for these biases
+is by using a variable in the model such as sampling effort (some
+examples include: distance traveled, number of observations per visit,
+duration spent observing). However in the absence of such variables,
+running a second spatial field in the model can improve performance of
+the integrated model <span class="citation">(Simmonds et al.
+2020)</span>. To add a second spatial field to our model, we use the
+<code>.$addBias</code> function, which is part of the <em>intModel</em>
+object created above.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_caerulescens&#39;</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_fusca&#39;</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_magnolia&#39;</span>)</span></code></pre></div>
+</div>
+<div id="priorsfixed" class="section level6">
+<h6><code>.$priorsFixed</code></h6>
+<p>Suppose we knew <em>a priori</em> what the mean and precision values
+of one of the fixed terms for a given species was: we could add this
+knowledge to the model using the <code>.$priorsFixed</code>
+function.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">priorsFixed</span>(<span class="at">Effect =</span> <span class="st">&#39;elevation&#39;</span>, <span class="at">Species =</span> <span class="st">&#39;fusca&#39;</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">mean.linear =</span> <span class="dv">2</span>, <span class="at">prec.linear =</span> <span class="fl">0.05</span>)</span></code></pre></div>
+</div>
+<div id="changecomponents" class="section level6">
+<h6><code>.$changeComponents</code></h6>
+<p>If we would like to see what the components required by
+<em>inlabru</em> in our model are, we can use the
+<code>.$changeComponents</code> function with no arguments
+specified.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">changeComponents</span>()</span></code></pre></div>
+<p>This model is thus specified with: two environmental covariates, an
+intercept term per species, a spatial field per species, the three bias
+fields for the <em>presence only</em> data as well as a shared spatial
+field between the different datasets. If we wanted to add/change or
+remove a component entirely, this could be done with the
+<code>addComponent</code> and <code>removeComponent</code> argument
+respectively.</p>
+</div>
+<div id="spatialblock" class="section level6">
+<h6><code>.$spatialBlock</code></h6>
+<p><code>.$spatialBlock</code> is used to set up spatial blocked
+cross-validation for the model by assigning each point in the datasets a
+block based on where the point is located spatially. For this example,
+we chose four blocks (<code>k=4</code>) for our model, based around a
+2x2 grid (<code>rows = 2, cols = 2</code>). See the figure below for an
+illustration of the spatial block: the amount of data within each block
+appears reasonably equal.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">cols =</span> <span class="dv">2</span>, <span class="at">plot =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>()</span></code></pre></div>
+</div>
+</div>
+<div id="blockedcv" class="section level5">
+<h5><code>blockedCV</code></h5>
+<p>Spatial blocked cross-validation may then be produced using the
+<code>blockedCV</code> function. We specify
+<code>control.inla = list(int.strategy = &#39;eb&#39;)</code> in our
+<code>options</code> argument in order to speed up the model running
+time.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> spatial_data, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked</span></code></pre></div>
+<p>More so, we can compare the cross-validation score from this model to
+one without the shared spatial effect (specified with
+<code>pointsSpatial = FALSE</code> in <code>intModel</code>).</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>no_fields <span class="ot">&lt;-</span> <span class="fu">intModel</span>(BBS, BBA, eBird_fusca, </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                      eBird_caerulescens, eBird_magnolia,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">pointsSpatial =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                      <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>no_fields<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">cols =</span> <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked_no_fields <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> no_fields, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked_no_fields</span></code></pre></div>
+<p>Based on the DIC scores, we conclude that the model with the shared
+spatial field provides a better fit of the data.</p>
+</div>
+<div id="runmodel" class="section level5">
+<h5><code>runModel</code></h5>
+<p>The integrated model is easily run with the <code>runModel</code>
+function as seen below by supplying the occurrence and <em>R-INLA</em>
+objects (created above with <code>intModel</code>).</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">runModel</span>(<span class="at">data =</span> spatial_data, </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>results_plot <span class="ot">&lt;-</span> joint_model<span class="sc">$</span>summary.fixed <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">species =</span> <span class="fu">gsub</span>(<span class="st">&#39;_.*$&#39;</span>,<span class="st">&#39;&#39;</span>,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">coefficient =</span> <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>coefficient_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(results_plot, <span class="fu">aes</span>(<span class="at">x =</span> coefficient, <span class="at">y =</span> mean)) <span class="sc">+</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="fu">grey</span>(<span class="fl">0.25</span>), <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">y =</span> mean)) <span class="sc">+</span> </span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">ymin =</span> <span class="st">`</span><span class="at">0.025quant</span><span class="st">`</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">ymax =</span> <span class="st">`</span><span class="at">0.975quant</span><span class="st">`</span>,</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">col =</span> species),</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">lwd =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&#39;#003f5c&#39;</span>, <span class="st">&#39;#bc5090&#39;</span>,<span class="st">&#39;#ffa600&#39;</span>)) <span class="sc">+</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">&quot;bottom&quot;</span>,</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>                    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">ggtitle</span>(<span class="st">&quot;95% credibility intervals of the fixed effects</span><span class="sc">\n</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="st">                            for the three studied species&quot;</span>) <span class="sc">+</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&#39;Variable&#39;</span>, <span class="at">y =</span> <span class="st">&#39;Coefficient value&#39;</span>) <span class="sc">+</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">coord_flip</span>()</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>coefficient_plot</span></code></pre></div>
+</div>
+<div id="datasetout" class="section level5">
+<h5><code>datasetOut</code></h5>
+<p><em>PointedSDMs</em> also includes the function
+<code>datasetOut</code>, which iteratively omits one dataset (and its
+associated marks) out of the full model. For example, we can calculate
+the effect on the other variables by leaving out the dataset
+<em>BBA</em>, which contributes the most occurrences used in our
+joint-likelihood model by a significant amount.</p>
+<p>Furthermore, by setting <code>predictions = TRUE</code> we are able
+to calculate some cross-validation score by leaving out the selected
+dataset. This score is calculated by predicting the covariate values of
+the left-out using the reduced model (i.e the model with the dataset
+left out), using the predicted values as an offset in a new model, and
+then finding the difference between the marginal-likelihood of the full
+model (i.e the model with all the datasets considered) and the
+marginal-likelihood of the offset model.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>dataset_out <span class="ot">&lt;-</span> <span class="fu">datasetOut</span>(<span class="at">model =</span> joint_model,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">dataset =</span> <span class="st">&quot;BBA&quot;</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">predictions =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>dataset_out</span></code></pre></div>
+</div>
+<div id="predict" class="section level5">
+<h5><code>predict</code></h5>
+<p>A significant part of SDMs is creating prediction maps to understand
+the species’ spread. Predictions of the integrated SDM’s from
+<code>runModel</code> are made easy using the <code>predict</code>
+function. By supplying the relevant components, the predict function
+will create the formula required by <em>inlabru</em>’s
+<code>predict</code> function to make predictive maps. In this example,
+we made predictions for the spatial fields of the species, on the linear
+scale using 1000 samples.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>projections <span class="ot">&lt;-</span> <span class="fu">predict</span>(joint_model, <span class="at">mesh =</span> mesh, <span class="at">mask =</span> PA, </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">spatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">fun =</span> <span class="st">&#39;linear&#39;</span>, <span class="at">n.samples =</span> <span class="dv">1000</span>)</span></code></pre></div>
+</div>
+<div id="plot-1" class="section level5">
+<h5><code>plot</code></h5>
+<p><em>PointedSDMs</em> also provides a general plotting function to
+plot the maps using the predicted values obtained in the
+<code>predict</code> function. The plot below shows the predictions of
+the three spatial fields of our species.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(projections, <span class="at">whattoplot =</span> <span class="st">&#39;mean&#39;</span>, </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">colourLow =</span> <span class="st">&#39;orange&#39;</span>, <span class="at">colourHigh =</span> <span class="st">&#39;dark red&#39;</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="references" class="section level4 unnumbered">
+<h4 class="unnumbered">References</h4>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-bachl2019inlabru" class="csl-entry">
+Bachl, Fabian E, Finn Lindgren, David L Borchers, and Janine B Illian.
+2019. <span>“Inlabru: An r Package for Bayesian Spatial Modelling from
+Ecological Survey Data.”</span> <em>Methods in Ecology and
+Evolution</em> 10 (6): 760–66. <a href="https://doi.org/10.1111/2041-210X.13168">https://doi.org/10.1111/2041-210X.13168</a>.
+</div>
+<div id="ref-FEDdata" class="csl-entry">
+Bocinsky, R Kyle, Dylan Beaudette, Scott Chamberlain, and Maintainer R
+Kyle Bocinsky. 2019. <span>“FedData: Functions to Automate Downloading
+Geospatial Data Available from Several Federated Data Sources.”</span>
+<a href="https://cran.r-project.org/package=FedData">https://cran.r-project.org/package=FedData</a>.
+</div>
+<div id="ref-spocc" class="csl-entry">
+Chamberlain, Scott. 2021. <span>“Spocc: Interface to Species Occurrence
+Data Sources.”</span> <a href="https://cran.r-project.org/package=spocc">https://cran.r-project.org/package=spocc</a>.
+</div>
+<div id="ref-hollister2017elevatr" class="csl-entry">
+Hollister, J, and Tarak Shah. 2017. <span>“Elevatr: Access Elevation
+Data from Various APIs.”</span> <a href="https://cran.r-project.org/package=elevatr">https://cran.r-project.org/package=elevatr</a>.
+</div>
+<div id="ref-isaac2020data" class="csl-entry">
+Isaac, Nick JB, Marta A Jarzyna, Petr Keil, Lea I Dambly, Philipp H
+Boersch-Supan, Ella Browning, Stephen N Freeman, et al. 2020.
+<span>“Data Integration for Large-Scale Models of Species
+Distributions.”</span> <em>Trends in Ecology &amp; Evolution</em> 35
+(1): 56–67. <a href="https://doi.org/10.1016/j.tree.2019.08.006">https://doi.org/10.1016/j.tree.2019.08.006</a>.
+</div>
+<div id="ref-martins2013bayesian" class="csl-entry">
+Martins, Thiago G, Daniel Simpson, Finn Lindgren, and Håvard Rue. 2013.
+<span>“Bayesian Computing with INLA: New Features.”</span>
+<em>Computational Statistics &amp; Data Analysis</em> 67: 68–83. <a href="https://doi.org/10.1016/j.csda.2013.04.014">https://doi.org/10.1016/j.csda.2013.04.014</a>.
+</div>
+<div id="ref-miller2019recent" class="csl-entry">
+Miller, David AW, Krishna Pacifici, Jamie S Sanderlin, and Brian J
+Reich. 2019. <span>“The Recent Past and Promising Future for Data
+Integration Methods to Estimate Species’ Distributions.”</span>
+<em>Methods in Ecology and Evolution</em> 10 (1): 22–37. <a href="https://doi.org/10.1111/2041-210X.13110">https://doi.org/10.1111/2041-210X.13110</a>.
+</div>
+<div id="ref-USABoundaries" class="csl-entry">
+rOpenSci. 2018. <span>“<span>USABoundaries</span>.”</span> <a href="https://github.com/ropensci/USAboundaries">https://github.com/ropensci/USAboundaries</a>.
+</div>
+<div id="ref-rue2009approximate" class="csl-entry">
+Rue, Håvard, Sara Martino, and Nicolas Chopin. 2009. <span>“Approximate
+Bayesian Inference for Latent Gaussian Models by Using Integrated Nested
+Laplace Approximations.”</span> <em>Journal of the Royal Statistical
+Society: Series b (Statistical Methodology)</em> 71 (2): 319–92. <a href="https://doi.org/10.1111/j.1467-9868.2008.00700.x">https://doi.org/10.1111/j.1467-9868.2008.00700.x</a>.
+</div>
+<div id="ref-simmonds2020more" class="csl-entry">
+Simmonds, Emily G, Susan G Jarvis, Peter A Henrys, Nick JB Isaac, and
+Robert B O’Hara. 2020. <span>“Is More Data Always Better? A Simulation
+Study of Benefits and Limitations of Integrated Distribution
+Models.”</span> <em>Ecography</em> 43 (10): 1413–22. <a href="https://doi.org/10.1111/ecog.05146">https://doi.org/10.1111/ecog.05146</a>.
+</div>
+<div id="ref-simpson2017penalising" class="csl-entry">
+Simpson, Daniel, Håvard Rue, Andrea Riebler, Thiago G Martins, and
+Sigrunn H Sørbye. 2017. <span>“Penalising Model Component Complexity: A
+Principled, Practical Approach to Constructing Priors.”</span>
+<em>Statistical Science</em> 32 (1): 1–28. <a href="https://doi.org/10.1214/16-STS576">https://doi.org/10.1214/16-STS576</a>.
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
