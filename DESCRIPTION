@@ -2,7 +2,7 @@ Package: PointedSDMs
 Type: Package
 Title: Fit Models Derived from Point Processes to Species Distributions
         using 'inlabru'
-Version: 1.0.5
+Version: 1.0.6
 Authors@R: c(
   person(given = "Philip", family = "Mostert", email = "philip.s.mostert@ntnu.no",
           role = c("aut", "cre")),
@@ -29,8 +29,8 @@ Config/testthat/edition: 3
 LazyData: true
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2022-06-12 19:13:46 UTC; philism
+Packaged: 2022-06-15 06:27:54 UTC; philism
 Author: Philip Mostert [aut, cre],
   Bob O'hara [aut]
 Repository: CRAN
-Date/Publication: 2022-06-14 10:30:02 UTC
+Date/Publication: 2022-06-15 08:20:12 UTC
