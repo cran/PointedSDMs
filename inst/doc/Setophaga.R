@@ -48,17 +48,7 @@ library(PointedSDMs)
 #  library(knitr)
 #  library(kableExtra)
 #  library(dplyr)
-#  
-
-## ----Load points--------------------------------------------------------------
-#  
-#  data('SetophagaData')
-#  
-
-## ----Covariate data, message = FALSE, warning = FALSE-------------------------
-#  
-#  covariates <- scale(stack(elev_raster, NLCD_canopy_raster))
-#  names(covariates) <- c('elevation', 'canopy')
+#  library(spocc)
 #  
 
 ## ----Map of PA----------------------------------------------------------------
@@ -68,6 +58,46 @@ library(PointedSDMs)
 #  PA <- USAboundaries::us_states(states = "Pennsylvania")
 #  PA <- PA$geometry[1]
 #  PA <- as(PA, "Spatial")
+#  
+
+## ---- get_eBird---------------------------------------------------------------
+#  
+#  species <- c('caerulescens', 'fusca', 'magnolia')
+#  
+#  dataSets <- list()
+#  for (bird in species) {
+#  
+#    raw_data <- spocc::occ(
+#                query = paste('Setophaga', bird),
+#                from = "gbif",
+#                date = c("2005-01-01", "2005-12-31"),
+#                geometry = PA@bbox)$gbif
+#  
+#    rows <- grep("EBIRD", raw_data$data[[paste0('Setophaga_', bird)]]$collectionCode)
+#    cols <- c("longitude", "latitude")
+#    raw_coords <- data.frame(raw_data$data[[paste0('Setophaga_', bird)]][rows, cols])
+#  
+#    colnames(raw_coords) <- c("X", "Y")
+#  
+#    data_sp <- SpatialPointsDataFrame(coords = raw_coords[, c('X', 'Y')],
+#                                                 data = data.frame(Species_name = rep(bird, nrow(raw_coords))),
+#                                                 proj4string = proj)
+#    dataSets[[paste0('eBird_', bird)]] <- data_sp[!is.na(over(data_sp, PA)),]
+#  
+#    }
+#  
+
+## ----Load points--------------------------------------------------------------
+#  
+#  data('SetophagaData')
+#  dataSets[['BBA']] <- SetophagaData$BBA
+#  dataSets[['BBS']] <- SetophagaData$BBS
+#  
+
+## ----Covariate data, message = FALSE, warning = FALSE-------------------------
+#  
+#  covariates <- scale(stack(SetophagaData$elev_raster, SetophagaData$NLCD_canopy_raster))
+#  names(covariates) <- c('elevation', 'canopy')
 #  
 
 ## ----Mesh, warning = FALSE, message = FALSE, fig.width=8, fig.height=5--------
@@ -89,8 +119,7 @@ library(PointedSDMs)
 
 ## ----Model prep, warning = FALSE, message = FALSE-----------------------------
 #  
-#  spatial_data <- intModel(BBS, BBA, eBird_fusca,
-#                          eBird_caerulescens, eBird_magnolia,
+#  spatial_data <- intModel(dataSets,
 #                          Coordinates = c('X', 'Y'),
 #                          Projection = proj, Mesh = mesh,
 #                          responsePA = 'NPres', responseCounts = 'Counts',
@@ -157,10 +186,9 @@ library(PointedSDMs)
 
 ## ----No fields model, message = FALSE, warning = FALSE------------------------
 #  
-#  no_fields <- intModel(BBS, BBA, eBird_fusca,
-#                        eBird_caerulescens, eBird_magnolia,
+#  no_fields <- intModel(dataSets,
 #                        Coordinates = c('X', 'Y'),
-#                        pointsSpatial = FALSE,
+#                        pointsSpatial = NULL,
 #                        Projection = proj, Mesh = mesh,
 #                        responsePA = 'NPres', responseCounts = 'Counts',
 #                        spatialCovariates = covariates, speciesName = 'Species_name')

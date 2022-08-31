@@ -120,9 +120,9 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       for (i in 1:length(index)) {
         
-        points[[data]][[i]] <- private$modelData[[data]][[i]][, names(private$modelData[[data]][[i]]) %in% c(private$speciesName, private$responseCounts,
+        points[[data]][[i]] <- private$modelData[[data]][[i]][, names(private$modelData[[data]][[i]]) %in% c(private$temporalName, private$speciesName, private$responseCounts,
                                                                                                              private$responsePA,'BRU_aggregate')]
-        
+       
         if ('BRU_aggregate' %in% names(points[[data]][[i]])) points[[data]][[i]] <- points[[data]][[i]][points[[data]][[i]]$BRU_aggregate,]
         
         if (!Species) points[[data]][[i]]@data[,'..Dataset_placeholder_var..'] <- rep(data, nrow(points[[data]][[i]]@data))
@@ -134,10 +134,31 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
-    plotData <- do.call(rbind.SpatialPointsDataFrame, lapply(unlist(points), function(x) x[, names(x) %in% c('..Dataset_placeholder_var..', private$speciesName)]))
+    plotData <- do.call(sp::rbind.SpatialPointsDataFrame, lapply(unlist(points), function(x) x[, names(x) %in% c('..Dataset_placeholder_var..', private$speciesName, private$temporalName)]))
     
     if (Boundary) bound <- gg(private$polyfromMesh())
     else bound <- NULL
+    
+    if (!is.null(private$temporalName)) {
+      
+      if (Species) {
+       
+        plotData@data[, private$speciesName] <- unlist(private$speciesIndex) 
+        
+        colOption <- gg(plotData, aes(col = eval(parse(text = private$speciesName))))
+        stop('No')
+        ggplot() + colOption + bound + guides(col = guide_legend(title = 'Species Name')) + facet_wrap(formula(paste('~', private$temporalName)))
+        
+      }
+      else {
+        
+        colOption <- gg(plotData, aes(col = eval(parse(text = '..Dataset_placeholder_var..'))))
+  
+        ggplot() + colOption + bound + guides(col = guide_legend(title = 'Dataset Name')) + facet_wrap(formula(paste('~', private$temporalName)))
+        
+      }
+      
+    } else {
     
     if (Species) {
       
@@ -158,7 +179,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
-    
+    }
     
     
   }
@@ -570,7 +591,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       pointData$makeMultinom(multinomVars = private$temporalName,
                              return = 'time', oldVars = NULL)
       
-      private$temporalVars <- pointData$timeIndex #??
+      private$temporalVars <- pointData$timeIndex
       
     }
     
@@ -712,16 +733,17 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
+    if (!is.null(private$initialnames)) private$initialnames <- NULL
+    
   }
   ,
   #' @description Function used to add additional spatial fields (called \emph{bias fields}) to a selected dataset present in the integrated model. \emph{Bias fields} are typically used to account for sampling biases in opportunistic citizen science data in the absence of any covariate to do such.
   #' @param datasetNames A vector of dataset names (class \code{character}) for which a bias field needs to be added to. If \code{NULL} (default), then \code{allPO} has to be \code{TRUE}.
   #' @param allPO Logical: should a bias field be added to all datasets classified as presence only in the integrated model. Defaults to \code{FALSE}.
   #' @param biasField An \code{inla.spde} object used to describe the bias field. Defaults to \code{NULL} which uses \code{\link[INLA]{inla.spde2.matern}} to create a Matern model for the field.
-  #' 
-  #' 
+  #' @param temporalModel List of model specifications given to the control.group argument in the time effect component. Defaults to \code{list(model = 'ar1')}; see \code{\link[INLA]{control.group}} from the \pkg{INLA} package for more details. \code{temporalName} needs to be specified in \code{intModel} prior.
   #' @examples
-  
+  #'  
   #'  if (requireNamespace('INLA')) {
   #'    
   #'  #Get Data
@@ -741,7 +763,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
   #' }
   addBias = function(datasetNames = NULL,
                      allPO = FALSE,
-                     biasField = NULL) {
+                     biasField = NULL,
+                     temporalModel = list(model = 'ar1')) {
     
     if (allPO) datasetNames <- names(private$printSummary)[private$printSummary == 'Present Only']
     else
@@ -772,7 +795,22 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     
     #Should I copy the bias fields for the marks?
-    private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = coordinates, model = ', datasetNames, '_bias_field)'))
+    
+    if (!is.null(private$temporalName)) {
+
+      temporalModel <- deparse1(temporalModel)
+      
+      private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = coordinates, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      
+      
+    }
+    else {
+      
+      private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = coordinates, model = ', datasetNames, '_bias_field)'))
+      
+    }
+    
+    
     ##Things to do here:
     #Go into the liks of PO datasets and add the biasfield
     #Go inth the components and add the bias field component
@@ -1373,7 +1411,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     private$spatialBlockCall <- paste0(gsub('.*\\(', 'self$spatialBlock(', deparse(match.call())))
 
-    blocks <- R.devices::suppressGraphics(blockCV::spatialBlock(speciesData = do.call(rbind.SpatialPoints, append(unlist(private$modelData),private$IPS)),
+    blocks <- R.devices::suppressGraphics(blockCV::spatialBlock(speciesData = do.call(sp::rbind.SpatialPoints, append(unlist(private$modelData),private$IPS)),
                                                                 k = k, rows = rows, cols = cols, selection = 'random',
                                                                 verbose = FALSE, progress = FALSE, seed = seed, ...))
     
@@ -1406,7 +1444,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
           
         })
         
-        private$modelData[[data]][[process]] <- do.call(rbind.SpatialPointsDataFrame, blocked_data[[data]][[process]])
+        private$modelData[[data]][[process]] <- do.call(sp::rbind.SpatialPointsDataFrame, blocked_data[[data]][[process]])
         
       }
       
@@ -1422,7 +1460,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       if (nrow(blocked_ips[[i]]) !=0) blocked_ips[[i]]$.__block_index__ <- as.character(folds[i])
       
     }
-    private$IPS <- do.call(rbind.SpatialPointsDataFrame, blocked_ips)
+    private$IPS <- do.call(sp::rbind.SpatialPointsDataFrame, blocked_ips)
     
     if (length(private$biasData) > 0) {
       
@@ -1451,7 +1489,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
            
          })
          
-         private$biasData[[samplers]] <- do.call(rbind.SpatialPointsDataFrame, blocked_samplers[[samplers]])
+         private$biasData[[samplers]] <- do.call(sp::rbind.SpatialPointsDataFrame, blocked_samplers[[samplers]])
          
        } else 
          if (class(private$biasData[[sampler]] %in% c('SpatialPolygons', 'SpatialPolygonsDataFrame'))) {
@@ -1482,7 +1520,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       spatPolys <- private$polyfromMesh()
       
-      all_data <- do.call(rbind.SpatialPointsDataFrame, lapply(unlist(private$modelData, recursive = FALSE), function(x) {
+      all_data <- do.call(sp::rbind.SpatialPointsDataFrame, lapply(unlist(private$modelData, recursive = FALSE), function(x) {
         
         x[, '.__block_index__']
         
@@ -1500,6 +1538,42 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
         theme(plot.title = element_text(hjust = 0.5))
   
     }
+    
+  }
+  ,
+  #' @description Function to add an integration domain for the PO datasets.
+  #' @param datasetName Name of the dataset for the samplers.
+  #' @param Samplers A \code{Spatial*} object representing the integration domain.
+  #' 
+  #' @example
+  #' 
+  #'  if (requireNamespace('INLA')) {
+  #'    
+  #'  #Get Data
+  #'  data("SolitaryTinamou")
+  #'  proj <- CRS("+proj=longlat +ellps=WGS84")
+  #'  data <- SolitaryTinamou$datasets
+  #'  mesh <- SolitaryTinamou$mesh
+  #'  mesh$crs <- proj
+  #'  
+  #'  #Set model up
+  #'  organizedData <- intModel(data, Mesh = mesh, Coordinates = c('X', 'Y'),
+  #'                              Projection = proj, responsePA = 'Present')
+  #'  
+  #' #Add integration domain for the eBird records
+  #' organizedData$addSamplers(datasetName = 'eBird', Samplers = SolitaryTinamou$region)
+  #' 
+  #' }
+  #' 
+  addSamplers = function(datasetName, Samplers) {
+    
+    if (!datasetName %in% private$dataSource) stop ('Dataset name provided not in model.')
+    
+    if (!inherits(Samplers, 'Spatial')) stop ('Samplers needs to be a Spatial* object.')
+    
+    Samplers@proj4string <- private$Projection
+    
+    private$Samplers[[datasetName]] <- Samplers
     
   }
   
@@ -1554,6 +1628,7 @@ dataSDM$set('private', 'multinomIndex', list())
 dataSDM$set('private', 'optionsINLA', list())
 
 dataSDM$set('private', 'spatialBlockCall', NULL)
+dataSDM$set('private', 'Samplers', list())
 
 #' @description Initialize function for dataSDM: used to store some compulsory arguments. Please refer to the wrapper function, \code{intModel} for creating new dataSDM objects.
 #' @param coordinates A vector of length 2 containing the names of the coordinates.
@@ -1770,7 +1845,7 @@ dataSDM$set('public', 'samplingBias', function(datasetName, Samplers) {
     private$biasData[[datasetName]] <- samplers
 
   }
-  else private$biasData[[datasetName]] <- do.call(rbind.SpatialPointsDataFrame, private$modelData[[datasetName]])
+  else private$biasData[[datasetName]] <- do.call(sp::rbind.SpatialPointsDataFrame, private$modelData[[datasetName]])
     
   self$changeComponents(addComponent = paste0(datasetName, '_samplers_field(main = coordinates, copy = "shared_spatial", fixed = FALSE)'), print = FALSE)
   self$changeComponents(addComponent = paste0(datasetName,'_samplers(1)'), print = FALSE)
