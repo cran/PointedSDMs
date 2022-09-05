@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philip Mostert" />
 
-<meta name="date" content="2022-08-30" />
+<meta name="date" content="2022-09-02" />
 
 <title>Spatiotemporal example</title>
 
@@ -334,7 +334,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Spatiotemporal example</h1>
 <h4 class="author">Philip Mostert</h4>
-<h4 class="date">2022-08-30</h4>
+<h4 class="date">2022-09-02</h4>
 
 
 
@@ -434,12 +434,12 @@ effect.</p>
 <p>The components for this model look like this:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">changeComponents</span>()</span></code></pre></div>
-<p>Next we run the model, using the function <code>runModel</code>. Due
+<p>Next we run the model, using the function <code>fitISDM</code>. Due
 to time considerations, inference for this model is not completed in the
 vignette. However, both the data and script is provided for the user to
 complete the analysis.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">runModel</span>(modelSetup,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(modelSetup,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a> </span></code></pre></div>
 <p>And finally create predictions for the three time periods, and plot

@@ -71,7 +71,7 @@ knitr::opts_chunk$set(
 
 ## ----run base model, warning = FALSE, message = FALSE-------------------------
 #  
-#  baseModel <- runModel(data = base)
+#  baseModel <- fitISDM(data = base)
 #  baseModel
 #  
 
@@ -97,7 +97,7 @@ knitr::opts_chunk$set(
 
 ## ----run fields model, warning = FALSE, message = FALSE-----------------------
 #  
-#  fieldsModel <- runModel(fields, options = list(control.inla = list(int.strategy = 'eb')))
+#  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb')))
 #  
 
 ## ----predict spatial, warning = FALSE, message = FALSE------------------------

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philip Mostert" />
 
-<meta name="date" content="2022-08-30" />
+<meta name="date" content="2022-09-02" />
 
 <title>Setophaga example</title>
 
@@ -356,7 +356,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Setophaga example</h1>
 <h4 class="author">Philip Mostert</h4>
-<h4 class="date">2022-08-30</h4>
+<h4 class="date">2022-09-02</h4>
 
 
 
@@ -461,13 +461,13 @@ together into a homogenized framework.</p>
 are several slot functions included to help specify the model at a finer
 scale. Use <code>?dataSDM</code> to get a comprehensive description of
 these slot functions.</p>
-<p>The next function used is <code>runModel</code> which takes the data
+<p>The next function used is <code>fitISDM</code> which takes the data
 object created with <code>intModel</code> and runs the integrated model.
 The output of this function is in essence an <em>inlabru</em> model
 output with additional information to be used by the sequential
 functions.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(runModel)</span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(fitISDM)</span></code></pre></div>
 <p>Spatial blocked cross-validation may be performed using the
 <code>blockedCV</code> function – which iteratively calculates and
 averages the deviance information criteria (DIC) for models run without
@@ -834,13 +834,13 @@ one without the shared spatial effect (specified with
 <p>Based on the DIC scores, we conclude that the model with the shared
 spatial field provides a better fit of the data.</p>
 </div>
-<div id="runmodel" class="section level5">
-<h5><code>runModel</code></h5>
-<p>The integrated model is easily run with the <code>runModel</code>
+<div id="fitisdm" class="section level5">
+<h5><code>fitISDM</code></h5>
+<p>The integrated model is easily run with the <code>fitISDM</code>
 function as seen below by supplying the occurrence and <em>R-INLA</em>
 objects (created above with <code>intModel</code>).</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">runModel</span>(<span class="at">data =</span> spatial_data, </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(<span class="at">data =</span> spatial_data, </span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>results_plot <span class="ot">&lt;-</span> joint_model<span class="sc">$</span>summary.fixed <span class="sc">%&gt;%</span></span>
@@ -896,7 +896,7 @@ marginal-likelihood of the offset model.</p>
 <h5><code>predict</code></h5>
 <p>A significant part of SDMs is creating prediction maps to understand
 the species’ spread. Predictions of the integrated SDM’s from
-<code>runModel</code> are made easy using the <code>predict</code>
+<code>fitISDM</code> are made easy using the <code>predict</code>
 function. By supplying the relevant components, the predict function
 will create the formula required by <em>inlabru</em>’s
 <code>predict</code> function to make predictive maps. In this example,

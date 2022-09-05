@@ -99,7 +99,7 @@ knitr::opts_chunk$set(
 
 ## ---- run_model---------------------------------------------------------------
 #  
-#  mod <- runModel(modelSetup,
+#  mod <- fitISDM(modelSetup,
 #                  options = list(control.inla = list(int.strategy = 'eb')))
 #  
 

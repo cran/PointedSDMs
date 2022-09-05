@@ -424,11 +424,11 @@ south-central part of the park.</p>
 <em>Forest</em> effect using <code>$priorsFixed</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>base<span class="sc">$</span><span class="fu">priorsFixed</span>(<span class="at">Effect =</span> <span class="st">&#39;Forest&#39;</span>, <span class="at">mean.linear =</span> <span class="fl">0.5</span>, <span class="at">prec.linear =</span> <span class="fl">0.01</span>)</span></code></pre></div>
-<p>To run the integrated model, we use the <code>runModel</code>
-function with the <code>data</code> argument as the object created with
-the <code>intModel</code> function above.</p>
+<p>To run the integrated model, we use the <code>fitISDM</code> function
+with the <code>data</code> argument as the object created with the
+<code>intModel</code> function above.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>baseModel <span class="ot">&lt;-</span> <span class="fu">runModel</span>(<span class="at">data =</span> base)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>baseModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(<span class="at">data =</span> base)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>baseModel</span></code></pre></div>
 </div>
 <div id="model-with-spatial-fields" class="section level3">
@@ -459,11 +459,11 @@ field would be specified with <em>R-INLA</em>’s
 with the <code>$addBias</code> slot function.</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fields<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird&#39;</span>)</span></code></pre></div>
-<p>Finally we run the integrated model, again with <code>runModel</code>
+<p>Finally we run the integrated model, again with <code>fitISDM</code>
 but this time we specify options with <em>R-INLA</em>’s <em>empirical
 Bayes</em> integration strategy to help with computation time.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>fieldsModel <span class="ot">&lt;-</span> <span class="fu">runModel</span>(fields, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>fieldsModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(fields, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
 </div>
 <div id="prediction-of-the-spatial-fields" class="section level3">
 <h3>Prediction of the spatial fields</h3>

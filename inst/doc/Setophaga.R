@@ -17,9 +17,9 @@ library(PointedSDMs)
 #  args(intModel)
 #  
 
-## ----runModel-----------------------------------------------------------------
+## ----fitISDM------------------------------------------------------------------
 #  
-#  args(runModel)
+#  args(fitISDM)
 #  
 
 ## ----args for blockedCV-------------------------------------------------------
@@ -208,7 +208,7 @@ library(PointedSDMs)
 
 ## ----Running model, message=FALSE, warning=FALSE, eval = FALSE----------------
 #  
-#  joint_model <- runModel(data = spatial_data,
+#  joint_model <- fitISDM(data = spatial_data,
 #                         options = list(control.inla = list(int.strategy = 'eb')))
 #  
 
