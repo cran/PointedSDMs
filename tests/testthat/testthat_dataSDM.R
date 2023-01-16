@@ -31,7 +31,9 @@ PA$temp <- sample(x = c(1,2), size = nrow(PA@coords), replace = TRUE)
 if (requireNamespace("INLA")) {
 mesh <<- INLA::inla.mesh.2d(boundary = INLA::inla.sp2segment(SpatialPoly), 
                             max.edge = 2)
-iPoints <<- inlabru::ipoints(samplers = SpatialPoly, domain = mesh)
+#iPoints <<- inlabru::ipoints(samplers = SpatialPoly, domain = mesh)
+iPoints <<- inlabru::ipoints(samplers = SpatialPoly)
+
 }
 
 ##Make PA a data.frame object
@@ -52,7 +54,7 @@ speciesSpatial <- TRUE
 temporalName <- 'temp'
 temporalModel <- deparse(list(model = 'ar1'))
 projection <- CRS('+proj=tmerc')
-
+copyModel = deparse1(list(beta = list(fixed = FALSE)))
 
 cov <- sp::spsample(x = SpatialPoly, n = 100000, type = 'random')
 cov$covariate <- rgamma(n = 100000, shape = 2)
@@ -79,7 +81,7 @@ test_that('dataSDMs initialize works as expected.', {
                        marksintercept = marksIntercept,
                        spatialcovariates = cov,
                        speciesname = speciesName,
-                       ips = iPoints,
+                       ips = iPoints, copymodel = copyModel,
                        spatial = 'shared', temporal = temporalName, 
                        intercepts = TRUE, temporalmodel = temporalModel)
   ##Test private classes
@@ -295,7 +297,7 @@ test_that('specifySpatial can correctly specify the spatial fields', {
   
   #Check errors:
    #give none of: sharedSpatial, species, mark, bias
-  expect_error(check$specifySpatial(prior.range = c(1,0.1), prior.sigma = c(0.2, 0.5)), 'At least one of sharedSpatial, datasetName, dataset, species or mark needs to be provided.')
+  expect_error(check$specifySpatial(prior.range = c(1,0.1), prior.sigma = c(0.2, 0.5)), 'At least one of sharedSpatial, datasetName, dataset, Species or Mark needs to be provided.')
    #give wrong species name
   expect_error(check$specifySpatial(Species = 'elephant', prior.range = c(1,0.1), prior.sigma = c(0.2, 0.5)), 'Species name provided is not currently in the model.')
    #give wrong mark name

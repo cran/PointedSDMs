@@ -676,6 +676,7 @@ Function to specify random fields in the model using penalizing complexity (PC) 
   Mark,
   Bias,
   PC = TRUE,
+  Copy = NULL,
   Remove = FALSE,
   ...
 )}\if{html}{\out{</div>}}
@@ -881,7 +882,8 @@ Function to add an integration domain for the PO datasets.
   temporal,
   temporalmodel,
   speciesspatial,
-  offset
+  offset,
+  copymodel
 )}\if{html}{\out{</div>}}
 }
 

@@ -100,6 +100,20 @@ knitr::opts_chunk$set(
 #  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb')))
 #  
 
+## ----copy model---------------------------------------------------------------
+#  
+#  copy <- intModel(datasets, Coordinates = c('X', 'Y'),
+#                   Projection = projection, Mesh = mesh, responsePA = 'Present',
+#                   Offset = 'area', pointsSpatial = 'copy')
+#  
+#  copy$changeComponents()
+#  
+
+## ----run copy model-----------------------------------------------------------
+#  
+#  copyModel <- fitISDM(copy, options = list(control.inla = list(int.strategy = 'eb')))
+#  
+
 ## ----predict spatial, warning = FALSE, message = FALSE------------------------
 #  
 #  spatial_predictions <- predict(fieldsModel, mesh = mesh,

@@ -146,7 +146,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
         plotData@data[, private$speciesName] <- unlist(private$speciesIndex) 
         
         colOption <- gg(plotData, aes(col = eval(parse(text = private$speciesName))))
-        stop('No')
+        
         ggplot() + colOption + bound + guides(col = guide_legend(title = 'Species Name')) + facet_wrap(formula(paste('~', private$temporalName)))
         
       }
@@ -280,7 +280,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
             
             cat("\n")
             dataNames <- paste0("dataset_", seq_len(length(dataList)))
-            
+            private$initialNames <- dataNames
           }
           
         }
@@ -290,7 +290,9 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       dataNames <- setdiff(as.character(match.call(expand.dots = TRUE)), 
                            as.character(match.call(expand.dots = FALSE)))
-    }
+      private$initialNames <- dataNames
+    
+      }
     
     if (!is.null(private$speciesName)) {
       
@@ -318,6 +320,14 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       if (private$Spatial == 'shared' && is.null(self$spatialFields$sharedField[['sharedField']])) self$spatialFields$sharedField[['sharedField']] <- INLA::inla.spde2.matern(mesh = private$INLAmesh)
       
+      else 
+        if (private$Spatial == 'copy') {
+          
+          mainName <- dataNames[[1]]
+          
+          if (is.null(self$spatialFields$datasetFields[[mainName]])) self$spatialFields$datasetFields[[mainName]] <- INLA::inla.spde2.matern(mesh = private$INLAmesh)
+          
+          } 
       else {
         
         for (dataset in dataNames) {
@@ -457,6 +467,11 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     if (!is.null(markNames)) {
       
+      namesIn <- unlist(sapply(dataPoints, function(x) names(x)))
+      if (length(private$modelData) != 0) namesIn <- c(namesIn,  unlist(sapply(unlist(private$modelData), function(x) names(x@data))))
+        
+      if (!all(markNames %in% unlist(namesIn))) stop('At least one mark specified is not present in the datasets, please check again.')
+        
       if (!missing(markFamily)) {
         
         markFamily <- private$markFamily <- c(private$markFamily, markFamily)
@@ -636,7 +651,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                                                      numtime = length(unique(unlist(private$temporalVars))),
                                                      temporalmodel = private$temporalModel,
                                                      speciesspatial = private$speciesSpatial,
-                                                     offsetname = private$Offset)
+                                                     offsetname = private$Offset,
+                                                     copymodel = private$copyModel)
       
     }
     else {
@@ -660,14 +676,14 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                                                 temporalmodel = private$temporalModel,
                                                 temporalname = private$temporalName,
                                                 speciesspatial = private$speciesSpatial,
-                                                offsetname = private$Offset)
+                                                offsetname = private$Offset,
+                                                copymodel = private$copyModel)
       
       
       private$Components <- union(private$Components, newComponents)
       
       
     }
-    
     
     if (!is.null(private$pointCovariates)) {
       
@@ -876,6 +892,13 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     if (!Points && is.null(markName)) stop ('markNames cannot be non-null if Points is FALSE.')
     
+    if (is.null(datasetName) && !is.null(markName)) {
+      
+      if (length(private$Formulas) > 1) stop('Please supply a dataset name with the mark.')
+      else datasetName <- names(private$Formulas)
+      
+    }
+    
     if (length(datasetName) != 1) stop ('Please only provide one dataset name.')
     
     if (!datasetName %in% private$dataSource) stop ('Dataset name provided not in model.')
@@ -944,7 +967,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       if (!is.null(markName)) {
         
         if (!markName %in% names(private$Formulas[[datasetName]][[name_index[1]]])) stop('markName not provided in datasetName.')
-        else index2 <- c(index2, which(names(private$Formulas[[datasetName]][[name_index[1]]]) %in% markName)) #Since they should all be the same ...
+        else index2 <- c(which(names(private$Formulas[[datasetName]][[name_index[1]]]) %in% markName)) #Since they should all be the same ...
         
         
       }
@@ -1204,6 +1227,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
   #' @param Species Name of which of the species' spatial field to be specified. Requires \code{speciesName} to be non-\code{NULL} in \code{\link{intModel}}.
   #' @param Mark Name of which of the mark' spatial field to be specified. Requires \code{markNames} to be non-\code{NULL} in \code{\link{intModel}}.
   #' @param Bias Name of the dataset for which the bias field to be specified.
+  #' @param Copy Name of the dataset to create a copy using \code{\link[INLA]'s copy feature for a mark or bias field. Defaults to \code{NULL} which does not copy any field. Requires one of \code{Mark} or \code{Bias} to be specified.
   #' @param PC Logical: should the Matern model be specified with pc priors. Defaults to \code{TRUE}, which uses \code{\link[INLA]{inla.spde2.pcmatern}} to specify the model; otherwise uses \code{\link[INLA]{inla.spde2.matern}}.
   #' @param Remove Logical: should the chosen spatial field be removed. Requires one of \code{sharedSpatial}, \code{species}, \code{mark} or \code{bias} to be non-missing, which chooses which field to remove.
   #' @param ... Additional arguments used by \pkg{INLA}'s \code{\link[INLA]{inla.spde2.pcmatern}} or \code{\link[INLA]{inla.spde2.matern}} function, dependent on the value of \code{PC}.
@@ -1237,24 +1261,36 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                             datasetName,
                             Species, Mark,
                             Bias, PC = TRUE,
+                            Copy = NULL,
                             Remove = FALSE, ...) {
     
-    if (all(!sharedSpatial && missing(datasetName) && missing(Species)  && missing(Mark)  &&  missing(Bias))) stop('At least one of sharedSpatial, datasetName, dataset, species or mark needs to be provided.')
+    if (all(!sharedSpatial && missing(datasetName) && missing(Species)  && missing(Mark)  &&  missing(Bias))) stop('At least one of sharedSpatial, datasetName, dataset, Species or Mark needs to be provided.')
     
-    if (sum(sharedSpatial, !missing(datasetName), !missing(Species), !missing(Mark), !missing(Bias)) != 1) stop('Please only choose one of sharedSpatial, datasetName, species, mark or bias.')
+    if (sum(sharedSpatial, !missing(datasetName), !missing(Species), !missing(Mark), !missing(Bias)) != 1) stop('Please only choose one of sharedSpatial, datasetName, Species, Mark or Bias.')
     
-    if (Remove && sum(sharedSpatial, !missing(datasetName), !missing(Species), !missing(Mark), !missing(Bias)) != 1) stop('Please choose one of sharedSpatial, datasetName, species, mark or bias to remove.')
+    if (Remove && sum(sharedSpatial, !missing(datasetName), !missing(Species), !missing(Mark), !missing(Bias)) != 1) stop('Please choose one of sharedSpatial, datasetName, Species, Mark or Bias to remove.')
+    
+    if (!is.null(Copy) && !Copy %in% unlist(private$dataSource)) stop('Dataset name provided is not currently in the model.')
     
     if (sharedSpatial) {
       
-      if (is.null(private$Spatial)) stop('Shared spatial field not included in the model. Please use pointsSpatial = "shared" in intModel.')
+      if (is.null(private$Spatial)) stop('Shared spatial field not included in the model. Please use pointsSpatial = "shared" or pointsSpatial = "copy" in intModel.')
       else 
         if (private$Spatial == 'individual') stop('pointsSpatial specified as "individual" in intModel. Please specify a dataset spatial effect to specify with datasetName.')
       
       
+      if (private$Spatial == 'shared') {
+        
       field_type <- 'sharedField'
       if (!Remove) index <- 'sharedField'
       else index <- 'shared_spatial'
+      
+      } else {
+        
+        field_type <- 'datasetFields'
+        if (!Remove) index <- private$initialNames[[1]]
+        else index <- private$initialNames[[1]]
+      }
       
     }
     
@@ -1286,7 +1322,14 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       if (!Mark %in% unlist(private$markNames)) stop('Mark name provided is not currently in the model.')
       
-      if (!Remove) field_type <- 'markFields'
+      if (!is.null(Copy)) {
+        
+        if (Mark %in% names(private$modelData[[copy]][[1]]@data)) stop('Mark not in dataset for provided.')
+        else fieldCopied <- paste0(Mark,'_spatial(main = coordinates, copy = \"', Copy, '\")')
+      }
+      
+      field_type <- 'markFields'
+      if (!Remove) index <- Mark
       else index <- paste0(Mark, '_spatial')
       
     } 
@@ -1299,9 +1342,17 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       if (!Remove) index <- Bias
       else index <- paste0(Bias, 'biasField')
       
+      if (!is.null(Copy)) fieldCopied <- paste0(Bias,'_biasField(main = coordinates, copy = \"', Bias, '\")')
+      
     }
     
     #if (missing(prior.range) || missing(prior.sigma)) stop('Both prior.range and prior.sigma need to be spefied.')
+    
+    if (!is.null(Copy)) {
+      
+      self$changeComponents(addComponent = fieldCopied, print = FALSE)
+      
+    }
     
     if (!Remove) {
       
@@ -1629,6 +1680,8 @@ dataSDM$set('private', 'optionsINLA', list())
 
 dataSDM$set('private', 'spatialBlockCall', NULL)
 dataSDM$set('private', 'Samplers', list())
+dataSDM$set('private', 'copyModel', NULL)
+dataSDM$set('private', 'datasetNames', NULL)
 
 #' @description Initialize function for dataSDM: used to store some compulsory arguments. Please refer to the wrapper function, \code{intModel} for creating new dataSDM objects.
 #' @param coordinates A vector of length 2 containing the names of the coordinates.
@@ -1647,18 +1700,20 @@ dataSDM$set('private', 'Samplers', list())
 #' @param spatial Logical argument describing if spatial effects should be included.
 #' @param intercepts Logical argument describing if intercepts should be included in the model.
 #' @param spatialcovariates Spatial covariates object used in the model.
-#' @param marksintercept Logical argument describing if the marks should have interceptes.
+#' @param marksintercept Logical argument describing if the marks should have intercepts.
 #' @param boundary A polygon map of the study area.
 #' @param ips Integration points and their respective weights to be used in the model.
 #' @param temporal Name of the temporal variable used in the model.
 #' @param offset Name of the offset column in the datasets.
+#' @param copymodel List of the specifications for the hyper parameters for the \code{"copy"} model.
 
 dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh, initialnames,
                                               responsecounts, responsepa, 
                                               marksnames, marksfamily, pointcovariates,
                                               trialspa, trialsmarks, speciesname, marksspatial,
                                               spatial, intercepts, spatialcovariates, marksintercepts,
-                                              boundary, ips, temporal, temporalmodel, speciesspatial, offset) {
+                                              boundary, ips, temporal, temporalmodel, speciesspatial, offset,
+                                              copymodel) {
   
   if (missing(coordinates)) stop('Coordinates need to be given.')
   if (missing(projection)) stop('projection needs to be given.')
@@ -1686,7 +1741,10 @@ dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh,
   if (!missing(temporal)) private$temporalName <- temporal
   private$temporalModel <- temporalmodel
   
+  if (!is.null(copymodel)) private$copyModel <- copymodel
+  
   if (!missing(initialnames)) private$initialnames <- initialnames
+    
   if (!missing(boundary)) private$Boundary <- boundary
   
   if (!missing(offset)) private$Offset <- offset

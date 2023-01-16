@@ -60,11 +60,12 @@ fitISDM <- function(data, options = list()) {
     
     if (is.null(x$RHS)) {
       
-      if (length(attributes(terms(x$LHS))[['term.labels']]) != 1) x$RHS
+      if (length(attributes(terms(x$LHS))[['term.labels']]) != 1) attributes(terms(x$LHS))[['term.labels']]
       else {
         
-        getTerms <- gsub('^.|[()]','',as.character(x$LHS)[3], perl = F)
-        getTerms <- unlist(strsplit(getTerms, split = ' '))
+        getTerms <- unlist(strsplit(as.character(x$LHS)[3], split = ' '))
+        getTerms <- gsub('.*\\(', '',getTerms)
+        getTerms <- gsub('\\)', '', getTerms)
         getTerms[!getTerms %in% c('+', '-', '/', '*', ':')]
         
       }
@@ -74,7 +75,7 @@ fitISDM <- function(data, options = list()) {
     
   }))
   )
-  
+  formula_terms <<- formula_terms
   comp_terms <- gsub('\\(.*$', '', data$.__enclos_env__$private$Components)
   
   #Will need to change this to say comp_terms %in% c(formula_terms, bias_terms)
@@ -114,7 +115,8 @@ fitISDM <- function(data, options = list()) {
                                 ntrialsvar = data$.__enclos_env__$private$trialsPA,
                                 markstrialsvar = data$.__enclos_env__$private$trialsMarks,
                                 speciesname = data$.__enclos_env__$private$speciesName,
-                                speciesindex = data$.__enclos_env__$private$speciesIndex))
+                                speciesindex = data$.__enclos_env__$private$speciesIndex,
+                                pointcovs = data$.__enclos_env__$private$pointCovariates))
   
   if (length(data$.__enclos_env__$private$biasData) > 0) {
     
