@@ -405,10 +405,10 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
-    if (missing(Offset)) offsetName <- private$Offset
+    if (missing(Offset)) Offset <- private$Offset
     else {
       
-      if (!is.null(Offset) && Offset != private$Offset) {
+      if (!is.null(Offset) && any(Offset != private$Offset)) {
         
         dataPoints <- nameChanger(data = dataPoints, oldName = Offset,
                                   newName = private$Offset)
@@ -417,6 +417,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       }
       
     }
+    
+    if (!is.null(Offset) && any(Offset %in% 'offset')) stop('The offset variable cannot be called "offset". Please choose a new name.')
     
     if (!is.null(private$speciesName)) {
       
@@ -685,10 +687,10 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
-    if (!is.null(private$pointCovariates)) {
+    if (!is.null(c(private$Offset, private$pointCovariates))) {
       
-      datMatrix <- as.data.frame(matrix(0, nrow = nrow(private$IPS@coords), ncol = length(private$pointCovariates)))
-      names(datMatrix) <- private$pointCovariates
+      datMatrix <- as.data.frame(matrix(NA, nrow = nrow(private$IPS@coords), ncol = length(c(private$Offset, private$pointCovariates))))
+      names(datMatrix) <- c(private$pointCovariates, private$Offset)
       private$IPS@data <- cbind(private$IPS@data, datMatrix)
       
     }
@@ -1453,7 +1455,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
   #'                            pointsSpatial = 'individual')
   #' 
   #'  #Specify the spatial block
-  #'  organizedData$spatialBlock(k = 2, rows = 2, cols = 1, plot = TRUE)
+  #'  organizedData$spatialBlock(k = 2, rows = 2, cols = 1, plot = FALSE)
   #'
   #' } 
   #'
@@ -1466,9 +1468,20 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                                                                 k = k, rows = rows, cols = cols, selection = 'random',
                                                                 verbose = FALSE, progress = FALSE, seed = seed, ...))
     
+    #blocks <- R.devices::suppressGraphics(blockCV::cv_spatial(x = do.call(sp::rbind.SpatialPoints, append(unlist(private$modelData),private$IPS)),
+    #                                                          rows_cols = rows_cols, progress = FALSE, seed = seed, report = FALSE,
+    #                                                          plot = FALSE, ...))
+    
+    ##Temporary fix
+    
     folds <- blocks$blocks$folds
     
+    blocks$blocks <- as(blocks$blocks, 'Spatial')
+    
     blocksPoly <- list(sapply(1:(rows * cols), function(s) SpatialPolygons(blocks$blocks@polygons[s], proj4string = private$Projection)))
+    
+    #blocksPoly <- list(sapply(1:(rows * cols), function(s) blocks$blocks$geometry[s])) #, proj4string = private$Projection
+    #https://github.com/r-spatial/sf/wiki/migrating read this to see how to get points over
     
     blocked_data <- list()
     in_where <- list()
@@ -1788,9 +1801,9 @@ dataSDM$set('private', 'polyfromMesh', function(...) {
   coords <- na.omit(data.frame(loc[t(cbind(segm$idx[,, drop=FALSE], NA)), 1],
                                loc[t(cbind(segm$idx[,, drop=FALSE], NA)), 2]))
   
-  Polys <- Polygon(coords = coords)
-  Polys <- Polygons(srl = list(Polys), ID = 'id')
-  SpatPolys <- SpatialPolygons(list(Polys), proj4string = private$Projection)
+  Polys <- sp::Polygon(coords = coords)
+  Polys <- sp::Polygons(srl = list(Polys), ID = 'id')
+  SpatPolys <- sp::SpatialPolygons(list(Polys), proj4string = private$Projection)
   SpatPolys
   
 })   

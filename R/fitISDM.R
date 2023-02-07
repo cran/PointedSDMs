@@ -75,7 +75,7 @@ fitISDM <- function(data, options = list()) {
     
   }))
   )
-  formula_terms <<- formula_terms
+  
   comp_terms <- gsub('\\(.*$', '', data$.__enclos_env__$private$Components)
   
   #Will need to change this to say comp_terms %in% c(formula_terms, bias_terms)
@@ -116,7 +116,7 @@ fitISDM <- function(data, options = list()) {
                                 markstrialsvar = data$.__enclos_env__$private$trialsMarks,
                                 speciesname = data$.__enclos_env__$private$speciesName,
                                 speciesindex = data$.__enclos_env__$private$speciesIndex,
-                                pointcovs = data$.__enclos_env__$private$pointCovariates))
+                                pointcovs = c(data$.__enclos_env__$private$pointCovariates, data$.__enclos_env__$private$Offset)))
   
   if (length(data$.__enclos_env__$private$biasData) > 0) {
     

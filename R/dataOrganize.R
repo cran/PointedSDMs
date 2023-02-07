@@ -576,9 +576,11 @@ dataOrganize$set('public', 'makeComponents', function(spatial, intercepts,
   
   if (!is.null(offsetname)) {
     
-    if (offsetname %in% unlist(self$varsIn)) {
+    if (any(offsetname %in% unlist(self$varsIn))) {
+     
+      offsetIn <- offsetname[offsetname %in% unlist(self$varsIn)]
       
-      offsetTerm <- paste0(offsetname,'(log(',offsetname,'), model = "offset")')
+      offsetTerm <- paste0(offsetIn,'(log(',offsetIn,'), model = "offset")')
       
     } else offsetTerm <- NULL
     
