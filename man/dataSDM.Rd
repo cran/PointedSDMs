@@ -19,8 +19,9 @@ The arguments of this function may be missing (ie not provided) if they have alr
  if (requireNamespace('INLA')) {
    
  #Get Data
+ library(ggplot2)
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -43,7 +44,7 @@ The arguments of this function may be missing (ie not provided) if they have alr
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  
  #Only select eBird data
  ebird <- SolitaryTinamou$datasets$eBird
@@ -75,7 +76,7 @@ The arguments of this function may be missing (ie not provided) if they have alr
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -98,7 +99,7 @@ organizedData$addBias(datasetNames = 'eBird')
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -133,7 +134,7 @@ organizedData$addBias(datasetNames = 'eBird')
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -160,11 +161,14 @@ organizedData$addBias(datasetNames = 'eBird')
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
- Forest <- SolitaryTinamou$covariates$Forest
+ Forest <- terra::rast(
+ system.file(
+ 'extdata/SolitaryTinamouCovariates.tif', 
+ package = "PointedSDMs"))$Forest
  
  
  #Set model up
@@ -186,7 +190,7 @@ organizedData$addBias(datasetNames = 'eBird')
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -232,7 +236,7 @@ dataObj$changeLink(Dataset = Dataset, Species = Species,
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -302,7 +306,7 @@ Makes a plot of the points surrounded by the boundary of the region where they w
 
 \item{\code{Species}}{Logical: should the points be plotted based on the species name. Defaults to \code{FALSE}.}
 
-\item{\code{Boundary}}{Logical: should a boundary (created using the \code{Mesh} object) be used in the plot. Defaults to \code{TRUE}. Note that the output of this function is a \code{gg} object, and so a boundary surrounding the points may be added using standard \pkg{ggplot2} syntax and the \code{\link[inlabru]{gg}} function provided in the \pkg{inlabru} package.}
+\item{\code{Boundary}}{Logical: should a boundary (created using the \code{Mesh} object) be used in the plot. Defaults to \code{TRUE}.}
 
 \item{\code{...}}{Not used.}
 }
@@ -317,8 +321,9 @@ A ggplot object.
  if (requireNamespace('INLA')) {
    
  #Get Data
+ library(ggplot2)
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -362,7 +367,7 @@ Function used to add additional datasets to the \code{dataSDM} object. This func
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{The datasets to be added to the integrated model: should be either \code{data.frame} or \code{SpatialPoints*} objects, or a list of objects from these classes.}
+\item{\code{...}}{The datasets to be added to the integrated model: should be either \code{sf}, \code{data.frame} or \code{SpatialPoints*} objects, or a list of objects from these classes.}
 
 \item{\code{responseCounts}}{The name of the response variable for the counts data.}
 
@@ -395,7 +400,7 @@ Function used to add additional datasets to the \code{dataSDM} object. This func
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  
  #Only select eBird data
  ebird <- SolitaryTinamou$datasets$eBird
@@ -457,7 +462,7 @@ Function used to add additional spatial fields (called \emph{bias fields}) to a 
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -522,7 +527,7 @@ If \code{Formula} and \code{newFormula} are missing, will print out the formula 
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -580,7 +585,7 @@ Function to add and specify custom components to model, which are required by \p
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -640,11 +645,14 @@ Function to change priors for the fixed (and possibly random) effects of the mod
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
- Forest <- SolitaryTinamou$covariates$Forest
+ Forest <- terra::rast(
+ system.file(
+ 'extdata/SolitaryTinamouCovariates.tif', 
+ package = "PointedSDMs"))$Forest
  
  
  #Set model up
@@ -709,7 +717,7 @@ Function to specify random fields in the model using penalizing complexity (PC) 
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
@@ -785,7 +793,7 @@ dataObj$changeLink(Dataset = Dataset, Species = Species,
 \subsection{Method \code{spatialBlock()}}{
 Function to spatially block the datasets, which will then be used for model cross-validation with \code{\link{blockedCV}}. See the \code{\link[blockCV]{spatialBlock}} function from \pkg{blockCV} for how the spatial blocking works and for further details on the function's arguments.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{dataSDM$spatialBlock(k, rows, cols, plot = FALSE, seed = 1234, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{dataSDM$spatialBlock(k, rows_cols, plot = FALSE, seed = 1234, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -793,9 +801,7 @@ Function to spatially block the datasets, which will then be used for model cros
 \describe{
 \item{\code{k}}{Integer value reflecting the number of folds to use.}
 
-\item{\code{rows}}{Integer value by which the area is divided into latitudinal bins.}
-
-\item{\code{cols}}{Integer value by which the area is divided into longitudinal bins.}
+\item{\code{rows_cols}}{Integer value by which the area is divided into longitudinal and latitudinal bins.}
 
 \item{\code{plot}}{Plot the cross-validation folds as well as the points across the boundary. Defaults to \code{FALSE}.}
 
@@ -811,7 +817,7 @@ Function to spatially block the datasets, which will then be used for model cros
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj

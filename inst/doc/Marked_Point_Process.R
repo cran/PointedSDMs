@@ -11,7 +11,9 @@ knitr::opts_chunk$set(
 ## ---- setup-------------------------------------------------------------------
 #  library(spatstat)
 #  library(PointedSDMs)
+#  library(sf)
 #  library(sp)
+#  library(ggplot2)
 #  library(inlabru)
 #  library(INLA)
 
@@ -24,37 +26,36 @@ knitr::opts_chunk$set(
 
 ## ---- clean_data, echo = FALSE,fig.width=7, fig.height=5----------------------
 #  
-#  proj <- CRS("+init=epsg:27700")
+#  proj <- "+init=epsg:27700"
 #  
-#  boundary@proj4string <- proj
+#  boundary <- as(boundary, 'sf')
+#  st_crs(boundary) <- proj
 #  
-#  euc <- SpatialPointsDataFrame(coords = cbind(x = eucTrees$E, y = eucTrees$N),
-#                                data = data.frame(koala = eucTrees$koala,
-#                                                  nitrogen = eucTrees$nitrogen,
-#                                                  food = eucTrees$FOOD,
-#                                                  dbh = eucTrees$dbh),
-#                                proj4string = proj)
-#  euc$food <- euc$food/1000
-#  euc <- euc[!c(is.na(over(euc, boundary))),]
+#  euc <- st_as_sf(x = eucTrees,
+#                  coords = c('E', 'N'),
+#                  crs = proj)
 #  
+#  euc$food <- euc$FOOD/1000
+#  euc <- euc[unlist(st_intersects(boundary, euc)),]
 #  
 #  class(trees)
 #  
 #  mesh = inla.mesh.2d(boundary = boundary, max.edge = 20)
-#  mesh$crs <- proj
+#  mesh$crs <- st_crs(proj)
+#  
 #  ggplot() +
-#    gg(boundary) +
-#    gg(euc, aes(color = koala)) +
+#    geom_sf(data = st_boundary(boundary)) +
+#    geom_sf(data = euc, aes(color = koala)) +
 #    ggtitle('Plot showing number of koalas at each site')
 #  
 #  ggplot() +
-#    gg(boundary) +
-#    gg(euc, aes(color = food)) +
+#    geom_sf(data = st_boundary(boundary)) +
+#    geom_sf(data = euc, aes(color = food)) +
 #    ggtitle('Plot showing the food value index at each site')
 #  
 #  
 
-## ---- analysis_of_data, eval = FALSE------------------------------------------
+## ---- analysis_of_data, eval = FALSE, echo= FALSE-----------------------------
 #  
 #  data(euc) ##will add this in the future when data is on archive
 #  
@@ -74,10 +75,11 @@ knitr::opts_chunk$set(
 ## ---- include_marks,fig.width=7, fig.height=5---------------------------------
 #  
 #  marks <- intModel(euc, Coordinates = c('x', 'y'), Projection = proj,
-#                    markNames = c('food', 'koala'), markFamily = c('gaussian', 'poisson'),
+#                    markNames = c('food', 'koala'), markFamily = c('gamma', 'poisson'),
 #                    Mesh = mesh)
 #  
-#  marksModel <- fitISDM(marks,  options = list(control.inla = list(int.strategy = 'eb')))
+#  marksModel <- fitISDM(marks, options = list(control.inla = list(int.strategy = 'eb'),
+#                                               safe = TRUE))
 #  
 #  foodPredictions <- predict(marksModel, mask = boundary,
 #                             mesh = mesh, marks = 'food', spatial = TRUE)
@@ -108,7 +110,7 @@ knitr::opts_chunk$set(
 #                        prior.range = c(10, 0.01))
 #  
 #  marksModel2 <- fitISDM(marks2, options = list(control.inla = list(int.strategy = 'eb'),
-#                                                bru_max_iter = 2))
+#                                                bru_max_iter = 2, safe = TRUE))
 #  
 #  
 #  predsMarks2 <- predict(marksModel2, mask = boundary, mesh = mesh,

@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
 ## ----setup, warning = FALSE, message = FALSE----------------------------------
 #  
 #  library(PointedSDMs)
-#  library(raster)
+#  library(terra)
 #  library(ggpolypath)
 #  library(INLA)
 #  library(ggplot2)
@@ -23,13 +23,15 @@ knitr::opts_chunk$set(
 ## ----load data----------------------------------------------------------------
 #  
 #  data('SolitaryTinamou')
-#  projection <- CRS("+proj=longlat +ellps=WGS84")
+#  projection <- "+proj=longlat +ellps=WGS84"
+#  
+#  covariates <- terra::rast(system.file('extdata/SolitaryTinamouCovariates.tif',
+#                                        package = "PointedSDMs"))
 #  
 #  datasets <- SolitaryTinamou$datasets
-#  covariates <- SolitaryTinamou$covariates
 #  region <- SolitaryTinamou$region
 #  mesh <- SolitaryTinamou$mesh
-#  mesh$crs <- projection
+#  
 #  
 
 ## ----look at data-------------------------------------------------------------
@@ -40,7 +42,7 @@ knitr::opts_chunk$set(
 
 ## ----covariates, fig.width=8, fig.height=5------------------------------------
 #  
-#  covariates <- scale(stack(covariates))
+#  covariates <- scale(covariates)
 #  crs(covariates) <- projection
 #  plot(covariates)
 #  
@@ -60,7 +62,7 @@ knitr::opts_chunk$set(
 ## ----data, fig.width=8, fig.height=5------------------------------------------
 #  
 #  base$plot(Boundary = FALSE) +
-#    gg(region) +
+#    geom_sf(data = st_boundary(region)) +
 #    ggtitle('Plot of the species locations by dataset')
 #  
 
@@ -98,6 +100,7 @@ knitr::opts_chunk$set(
 ## ----run fields model, warning = FALSE, message = FALSE-----------------------
 #  
 #  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb')))
+#  fieldsModel
 #  
 
 ## ----copy model---------------------------------------------------------------
@@ -112,6 +115,7 @@ knitr::opts_chunk$set(
 ## ----run copy model-----------------------------------------------------------
 #  
 #  copyModel <- fitISDM(copy, options = list(control.inla = list(int.strategy = 'eb')))
+#  copyModel
 #  
 
 ## ----predict spatial, warning = FALSE, message = FALSE------------------------

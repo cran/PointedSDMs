@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philip Mostert" />
 
-<meta name="date" content="2023-02-07" />
+<meta name="date" content="2023-08-08" />
 
 <title>Setophaga example</title>
 
@@ -362,7 +362,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Setophaga example</h1>
 <h4 class="author">Philip Mostert</h4>
-<h4 class="date">2023-02-07</h4>
+<h4 class="date">2023-08-08</h4>
 
 
 
@@ -411,9 +411,9 @@ data. We note that, for this particular vignette, no inference was made
 due to computational intensity of the model. However the <em>R</em>
 script and data are provided below so that the user may carry out
 inference.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="do">##Install if need be</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(PointedSDMs)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="do">##Install if need be</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(PointedSDMs)</span></code></pre></div>
 <div id="statistical-model" class="section level3">
 <h3>Statistical model</h3>
 <p>The goal of our statistical model is to infer the “true” distribution
@@ -461,8 +461,8 @@ is regarding four key steps in the statistical-modelling process:</p>
 <em>inlabru</em>, assign the relevant information to individual objects
 used in model specification, as well as structure the provided datasets
 together into a homogenized framework.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(intModel)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">args</span>(intModel)</span></code></pre></div>
 <p>The output of this function is an <em>R6</em> object, and so there
 are several slot functions included to help specify the model at a finer
 scale. Use <code>?dataSDM</code> to get a comprehensive description of
@@ -472,8 +472,8 @@ object created with <code>intModel</code> and runs the integrated model.
 The output of this function is in essence an <em>inlabru</em> model
 output with additional information to be used by the sequential
 functions.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(fitISDM)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">args</span>(fitISDM)</span></code></pre></div>
 <p>Spatial blocked cross-validation may be performed using the
 <code>blockedCV</code> function – which iteratively calculates and
 averages the deviance information criteria (DIC) for models run without
@@ -481,14 +481,14 @@ data from the selected spatial block. Before this function is used,
 <code>.$spatialBlock()</code> from the object produced by
 <code>intModel</code> is required in order to specify how the data
 should be spatially blocked (see below for an example).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(blockedCV)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">args</span>(blockedCV)</span></code></pre></div>
 <p><code>datasetOut</code> provides cross-validation for integrated
 models by running the full model with one less dataset, and calculating
 a score measuring the relative importance of the left out dataset in the
 full model.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">args</span>(datasetOut)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">args</span>(datasetOut)</span></code></pre></div>
 <p>Finally prediction of the full model may be completed using the
 <code>predict</code> function; the arguments here are mostly related to
 specifying which components are required to be predicted, however the
@@ -510,22 +510,22 @@ datasets containing a further two species.</p>
 <h3>Model preparations</h3>
 <p>The first step in our analysis is to load in the packages
 required.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(INLA)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(inlabru)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(USAboundaries)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(raster)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rasterVis)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggmap)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sn)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spocc)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">library</span>(INLA)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">library</span>(inlabru)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">library</span>(USAboundaries)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="fu">library</span>(sp)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="fu">library</span>(blockCV)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="fu">library</span>(ggmap)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="fu">library</span>(sn)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="fu">library</span>(spocc)</span></code></pre></div>
 <p>Finally, additional objects required by <em>PointedSDMs</em> and the
 <em>R-INLA</em> <span class="citation">(Martins et al. 2013)</span> and
 <em>inlabru</em> <span class="citation">(Bachl et al. 2019)</span>
@@ -537,12 +537,12 @@ construct an <em>inla.mesh</em> object as well as help with the plotting
 of graphics. In order to create one of these polygons objects, we are
 first required to define the projection reference system (see
 <code>?CRS</code> ).</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>proj <span class="ot">&lt;-</span> <span class="fu">CRS</span>(<span class="st">&quot;+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0&quot;</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> USAboundaries<span class="sc">::</span><span class="fu">us_states</span>(<span class="at">states =</span> <span class="st">&quot;Pennsylvania&quot;</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> PA<span class="sc">$</span>geometry[<span class="dv">1</span>]</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>PA <span class="ot">&lt;-</span> <span class="fu">as</span>(PA, <span class="st">&quot;Spatial&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>proj <span class="ot">&lt;-</span> <span class="st">&#39;+proj=longlat +datum=WGS84 +no_defs&#39;</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>PA <span class="ot">&lt;-</span> USAboundaries<span class="sc">::</span><span class="fu">us_states</span>(<span class="at">states =</span> <span class="st">&quot;Pennsylvania&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#PA &lt;- PA$geometry</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>PA <span class="ot">&lt;-</span> <span class="fu">as</span>(PA, <span class="st">&quot;sf&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="fu">st_crs</span>(PA) <span class="ot">&lt;-</span> proj</span></code></pre></div>
 <div id="species-occurrence-data" class="section level4">
 <h4>Species occurrence data</h4>
 <p>For our analysis, we used five datasets containing the geocoded
@@ -554,30 +554,31 @@ selection of popular online data repositories (<em>GBIF</em>,
 <em>Vernet</em>, <em>BISON</em>, <em>iNaturalist</em> and
 <em>eBird</em>). These data were obtained using the following
 script:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>species <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;caerulescens&#39;</span>, <span class="st">&#39;fusca&#39;</span>, <span class="st">&#39;magnolia&#39;</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>dataSets <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (bird <span class="cf">in</span> species) {</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  raw_data <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">query =</span> <span class="fu">paste</span>(<span class="st">&#39;Setophaga&#39;</span>, bird),</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">from =</span> <span class="st">&quot;gbif&quot;</span>,</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2005-01-01&quot;</span>, <span class="st">&quot;2005-12-31&quot;</span>),</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">geometry =</span> PA<span class="sc">@</span>bbox)<span class="sc">$</span>gbif</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  rows <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;EBIRD&quot;</span>, raw_data<span class="sc">$</span>data[[<span class="fu">paste0</span>(<span class="st">&#39;Setophaga_&#39;</span>, bird)]]<span class="sc">$</span>collectionCode)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;longitude&quot;</span>, <span class="st">&quot;latitude&quot;</span>)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  raw_coords <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(raw_data<span class="sc">$</span>data[[<span class="fu">paste0</span>(<span class="st">&#39;Setophaga_&#39;</span>, bird)]][rows, cols])</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(raw_coords) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;X&quot;</span>, <span class="st">&quot;Y&quot;</span>)</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  data_sp <span class="ot">&lt;-</span> <span class="fu">SpatialPointsDataFrame</span>(<span class="at">coords =</span> raw_coords[, <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>)], </span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                                               <span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">Species_name =</span> <span class="fu">rep</span>(bird, <span class="fu">nrow</span>(raw_coords))),</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                                               <span class="at">proj4string =</span> proj)</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  dataSets[[<span class="fu">paste0</span>(<span class="st">&#39;eBird_&#39;</span>, bird)]] <span class="ot">&lt;-</span> data_sp[<span class="sc">!</span><span class="fu">is.na</span>(<span class="fu">over</span>(data_sp, PA)),]</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>species <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;caerulescens&#39;</span>, <span class="st">&#39;fusca&#39;</span>, <span class="st">&#39;magnolia&#39;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>dataSets <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="cf">for</span> (bird <span class="cf">in</span> species) {</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  </span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  raw_data <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>              <span class="at">query =</span> <span class="fu">paste</span>(<span class="st">&#39;Setophaga&#39;</span>, bird),</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>              <span class="at">from =</span> <span class="st">&quot;gbif&quot;</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>              <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2005-01-01&quot;</span>, <span class="st">&quot;2005-12-31&quot;</span>),</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>              <span class="at">geometry =</span> PA)<span class="sc">$</span>gbif</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  </span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  rows <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;EBIRD&quot;</span>, raw_data<span class="sc">$</span>data[[<span class="fu">paste0</span>(<span class="st">&#39;Setophaga_&#39;</span>, bird)]]<span class="sc">$</span>collectionCode)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  raw_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(raw_data<span class="sc">$</span>data[[<span class="dv">1</span>]][rows, ])</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>  raw_data<span class="sc">$</span>Species_name <span class="ot">&lt;-</span> <span class="fu">rep</span>(bird, <span class="fu">nrow</span>(raw_data))</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>  </span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  data_sp <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>    <span class="at">x =</span> raw_data[, <span class="fu">names</span>(raw_data) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;longitude&quot;</span>, <span class="st">&quot;latitude&quot;</span>, <span class="st">&#39;Species_name&#39;</span>)],</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>    <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">&#39;longitude&#39;</span>, <span class="st">&#39;latitude&#39;</span>),</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>    <span class="at">crs =</span> proj)</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>  dataSets[[<span class="fu">paste0</span>(<span class="st">&#39;eBird_&#39;</span>, bird)]] <span class="ot">&lt;-</span> data_sp[<span class="fu">unlist</span>(<span class="fu">st_intersects</span>(PA, data_sp)),]</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>  </span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>  }</span></code></pre></div>
 <p>The <em>PointedSDMs</em> package also contains two additional
 structured datasets (<em>BBA, BBS</em>), which were both assumed to be
 presence absence datasets in the study conducted by <span class="citation">Isaac et al. (2020)</span>, containing the variable,
@@ -589,17 +590,17 @@ illustrative purposes. No additional changes were made to the
 <em>BBA</em> dataset, and so it was considered a presence absence
 dataset as originally intended. These datasets may be loaded using the
 following script:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&#39;SetophagaData&#39;</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>dataSets[[<span class="st">&#39;BBA&#39;</span>]] <span class="ot">&lt;-</span> SetophagaData<span class="sc">$</span>BBA</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>dataSets[[<span class="st">&#39;BBS&#39;</span>]] <span class="ot">&lt;-</span> SetophagaData<span class="sc">$</span>BBS</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&#39;SetophagaData&#39;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>dataSets[[<span class="st">&#39;BBA&#39;</span>]] <span class="ot">&lt;-</span> SetophagaData<span class="sc">$</span>BBA</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>dataSets[[<span class="st">&#39;BBS&#39;</span>]] <span class="ot">&lt;-</span> SetophagaData<span class="sc">$</span>BBS</span></code></pre></div>
 <table>
 <colgroup>
-<col width="13%" />
-<col width="13%" />
-<col width="13%" />
-<col width="13%" />
-<col width="45%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+<col width="22%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -666,11 +667,12 @@ Shah (2017)</span> and <span class="citation">Bocinsky et al.
 (2019)</span> R packages respectively. The script to obtain these
 spatial covariates is provided in the same github repository as the
 species occurrence data above; the only thing we did differently was
-keep the covariates as a <em>Raster</em> object, whereas the above
-script converts them to <em>SpatialPixelsDataFrames</em>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">stack</span>(SetophagaData<span class="sc">$</span>elev_raster, SetophagaData<span class="sc">$</span>NLCD_canopy_raster))</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(covariates) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;elevation&#39;</span>, <span class="st">&#39;canopy&#39;</span>)</span></code></pre></div>
+convert the covariates to a <em>spatRaster</em> object.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">scale</span>(terra<span class="sc">::</span><span class="fu">rast</span>(<span class="fu">system.file</span>(<span class="st">&#39;extdata/SetophagaCovariates.tif&#39;</span>, </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                                      <span class="at">package =</span> <span class="st">&quot;PointedSDMs&quot;</span>)))</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="fu">names</span>(covariates) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;elevation&#39;</span>, <span class="st">&#39;canopy&#39;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="fu">crs</span>(covariates) <span class="ot">&lt;-</span> proj</span></code></pre></div>
 </div>
 <div id="additional-objects" class="section level4">
 <h4>Additional objects</h4>
@@ -680,21 +682,20 @@ supplying the <code>max.edge</code><em>,</em> <code>offset</code> and
 <code>cutoff</code> arguments as well as our <em>SpatialPolygons</em>
 map of Pennsylvania to the <code>inla.mesh.2d</code> function. With this
 mesh, <code>intModel</code> will create integration points required by
-our model using <em>inlabru</em>’s <code>ipoints</code> function.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>mesh <span class="ot">&lt;-</span> <span class="fu">inla.mesh.2d</span>(<span class="at">boundary =</span> <span class="fu">inla.sp2segment</span>(PA), </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">cutoff =</span> <span class="fl">0.2</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">max.edge =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.24</span>), </span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                     <span class="at">offset =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.4</span>))</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>mesh<span class="sc">$</span>crs <span class="ot">&lt;-</span> proj</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>mesh_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>             <span class="fu">gg</span>(mesh) <span class="sc">+</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>             <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of mesh&#39;</span>) <span class="sc">+</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>             <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>             <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>mesh_plot</span></code></pre></div>
+our model using <em>inlabru</em>’s <code>fm_int</code> function.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>mesh <span class="ot">&lt;-</span> <span class="fu">inla.mesh.2d</span>(<span class="at">boundary =</span> <span class="fu">inla.sp2segment</span>(PA), </span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>                     <span class="at">cutoff =</span> <span class="fl">0.2</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>                     <span class="at">max.edge =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.24</span>), </span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>                     <span class="at">offset =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.4</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>                     <span class="at">crs =</span> <span class="fu">st_crs</span>(proj))</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>mesh_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>             <span class="fu">gg</span>(mesh) <span class="sc">+</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>             <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of mesh&#39;</span>) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>             <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>             <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>mesh_plot</span></code></pre></div>
 <div id="intmodel" class="section level5">
 <h5><code>intModel</code></h5>
 <p>The <code>intModel</code> function is the first step in the modeling
@@ -708,12 +709,12 @@ the response variable names of the counts data
 used (<code>Projection</code>). In addition, the species variable name
 (<code>speciesName</code>) was also specified in order to model the
 effects for the species found in the datasets.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>spatial_data <span class="ot">&lt;-</span> <span class="fu">intModel</span>(dataSets,</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                        <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>spatial_data <span class="ot">&lt;-</span> <span class="fu">intModel</span>(dataSets,</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>                        <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>                        <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>                        <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>                        <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span></code></pre></div>
 <p>As mentioned above, there are some slot functions now inside the
 <code>spatial_data</code> objects, which allow for a finer level of
 customization of the components for the integrated model.</p>
@@ -722,21 +723,21 @@ customization of the components for the integrated model.</p>
 <p>Let’s have a look at a graphical representation of the species’
 distribution, using the <code>.$plot()</code> function within
 <code>spatial_data</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg</span>(PA) <span class="sc">+</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the datasets&#39;</span>) <span class="sc">+</span> </span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> PA, <span class="at">fill =</span> <span class="st">&#39;black&#39;</span>, <span class="at">alpha =</span> <span class="fl">0.15</span>, <span class="at">lwd =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the datasets&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
 <p>This will create a plot of the location of the species based on their
 dataset, however if we wanted to plot by species, we could specify this
 with the <code>Species = TRUE</code> argument.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Species =</span> <span class="cn">TRUE</span>, <span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gg</span>(PA) <span class="sc">+</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the species&#39;</span>) <span class="sc">+</span> </span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">plot</span>(<span class="at">Species =</span> <span class="cn">TRUE</span>, <span class="at">Boundary =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> PA, <span class="at">fill =</span> <span class="st">&#39;black&#39;</span>, <span class="at">alpha =</span> <span class="fl">0.15</span>, <span class="at">lwd =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&#39;Plot of the species&#39;</span>) <span class="sc">+</span> </span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div>
 </div>
 <div id="specifyspatial" class="section level6">
 <h6><code>.$specifySpatial</code></h6>
@@ -748,10 +749,10 @@ GRF’s Matérn covariance function in order to reduce over-fitting in the
 model. This can be done with ease using the
 <code>.$specifySpatial</code> function, which will also update all the
 components associated with this field automatically.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="fl">0.01</span>),</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                            <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                            <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="fl">0.01</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>                            <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>))</span></code></pre></div>
 </div>
 <div id="addbias" class="section level6">
 <h6><code>.$addBias</code></h6>
@@ -766,10 +767,10 @@ the integrated model <span class="citation">(Simmonds et al.
 2020)</span>. To add a second spatial field to our model, we use the
 <code>.$addBias</code> function, which is part of the <em>intModel</em>
 object created above.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_caerulescens&#39;</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_fusca&#39;</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_magnolia&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_caerulescens&#39;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_fusca&#39;</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">addBias</span>(<span class="st">&#39;eBird_magnolia&#39;</span>)</span></code></pre></div>
 </div>
 <div id="priorsfixed" class="section level6">
 <h6><code>.$priorsFixed</code></h6>
@@ -777,9 +778,9 @@ object created above.</p>
 of one of the fixed terms for a given species was: we could add this
 knowledge to the model using the <code>.$priorsFixed</code>
 function.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">priorsFixed</span>(<span class="at">Effect =</span> <span class="st">&#39;elevation&#39;</span>, <span class="at">Species =</span> <span class="st">&#39;fusca&#39;</span>,</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">mean.linear =</span> <span class="dv">2</span>, <span class="at">prec.linear =</span> <span class="fl">0.05</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">priorsFixed</span>(<span class="at">Effect =</span> <span class="st">&#39;elevation&#39;</span>, <span class="at">Species =</span> <span class="st">&#39;fusca&#39;</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>                         <span class="at">mean.linear =</span> <span class="dv">2</span>, <span class="at">prec.linear =</span> <span class="fl">0.05</span>)</span></code></pre></div>
 </div>
 <div id="changecomponents" class="section level6">
 <h6><code>.$changeComponents</code></h6>
@@ -787,8 +788,8 @@ function.</p>
 <em>inlabru</em> in our model are, we can use the
 <code>.$changeComponents</code> function with no arguments
 specified.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">changeComponents</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">changeComponents</span>()</span></code></pre></div>
 <p>This model is thus specified with: two environmental covariates, an
 intercept term per species, a spatial field per species, the three bias
 fields for the <em>presence only</em> data as well as a shared spatial
@@ -806,8 +807,8 @@ we chose four blocks (<code>k=4</code>) for our model, based around a
 2x2 grid (<code>rows = 2, cols = 2</code>). See the figure below for an
 illustration of the spatial block: the amount of data within each block
 appears reasonably equal.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">cols =</span> <span class="dv">2</span>, <span class="at">plot =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>spatial_data<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows_cols =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">plot =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>()</span></code></pre></div>
 </div>
 </div>
 <div id="blockedcv" class="section level5">
@@ -817,26 +818,26 @@ appears reasonably equal.</p>
 <code>control.inla = list(int.strategy = &#39;eb&#39;)</code> in our
 <code>options</code> argument in order to speed up the model running
 time.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> spatial_data, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>spatialBlocked <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> spatial_data, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>spatialBlocked</span></code></pre></div>
 <p>More so, we can compare the cross-validation score from this model to
 one without the shared spatial effect (specified with
 <code>pointsSpatial = FALSE</code> in <code>intModel</code>).</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>no_fields <span class="ot">&lt;-</span> <span class="fu">intModel</span>(dataSets,</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">pointsSpatial =</span> <span class="cn">NULL</span>,</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>no_fields<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">cols =</span> <span class="dv">2</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked_no_fields <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> no_fields, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>spatialBlocked_no_fields</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>no_fields <span class="ot">&lt;-</span> <span class="fu">intModel</span>(dataSets,</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>                      <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;X&#39;</span>, <span class="st">&#39;Y&#39;</span>), </span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>                      <span class="at">pointsSpatial =</span> <span class="cn">NULL</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>                      <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh,</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>                      <span class="at">responsePA =</span> <span class="st">&#39;NPres&#39;</span>, <span class="at">responseCounts =</span> <span class="st">&#39;Counts&#39;</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a>                      <span class="at">spatialCovariates =</span> covariates, <span class="at">speciesName =</span> <span class="st">&#39;Species_name&#39;</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>no_fields<span class="sc">$</span><span class="fu">spatialBlock</span>(<span class="at">k =</span> <span class="dv">4</span>, <span class="at">rows =</span> <span class="dv">2</span>, <span class="at">cols =</span> <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>spatialBlocked_no_fields <span class="ot">&lt;-</span> <span class="fu">blockedCV</span>(<span class="at">data =</span> no_fields, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>spatialBlocked_no_fields</span></code></pre></div>
 <p>Based on the DIC scores, we conclude that the model with the shared
 spatial field provides a better fit of the data.</p>
 </div>
@@ -845,35 +846,35 @@ spatial field provides a better fit of the data.</p>
 <p>The integrated model is easily run with the <code>fitISDM</code>
 function as seen below by supplying the occurrence and <em>R-INLA</em>
 objects (created above with <code>intModel</code>).</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(<span class="at">data =</span> spatial_data, </span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>results_plot <span class="ot">&lt;-</span> joint_model<span class="sc">$</span>summary.fixed <span class="sc">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">species =</span> <span class="fu">gsub</span>(<span class="st">&#39;_.*$&#39;</span>,<span class="st">&#39;&#39;</span>,</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))) <span class="sc">%&gt;%</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">coefficient =</span> <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>coefficient_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(results_plot, <span class="fu">aes</span>(<span class="at">x =</span> coefficient, <span class="at">y =</span> mean)) <span class="sc">+</span></span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="fu">grey</span>(<span class="fl">0.25</span>), <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">y =</span> mean)) <span class="sc">+</span> </span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">ymin =</span> <span class="st">`</span><span class="at">0.025quant</span><span class="st">`</span>,</span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">ymax =</span> <span class="st">`</span><span class="at">0.975quant</span><span class="st">`</span>,</span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">col =</span> species),</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">lwd =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&#39;#003f5c&#39;</span>, <span class="st">&#39;#bc5090&#39;</span>,<span class="st">&#39;#ffa600&#39;</span>)) <span class="sc">+</span></span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">&quot;bottom&quot;</span>,</span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>                    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">ggtitle</span>(<span class="st">&quot;95% credibility intervals of the fixed effects</span><span class="sc">\n</span></span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a><span class="st">                            for the three studied species&quot;</span>) <span class="sc">+</span></span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&#39;Variable&#39;</span>, <span class="at">y =</span> <span class="st">&#39;Coefficient value&#39;</span>) <span class="sc">+</span></span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">coord_flip</span>()</span>
-<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>coefficient_plot</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>joint_model <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(<span class="at">data =</span> spatial_data, </span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>                       <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>results_plot <span class="ot">&lt;-</span> joint_model<span class="sc">$</span>summary.fixed <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">species =</span> <span class="fu">gsub</span>(<span class="st">&#39;_.*$&#39;</span>,<span class="st">&#39;&#39;</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a>                                      <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))) <span class="sc">%&gt;%</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>                <span class="fu">mutate</span>(<span class="at">coefficient =</span> <span class="fu">row.names</span>(joint_model<span class="sc">$</span>summary.fixed))</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a>coefficient_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(results_plot, <span class="fu">aes</span>(<span class="at">x =</span> coefficient, <span class="at">y =</span> mean)) <span class="sc">+</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>                    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="fu">grey</span>(<span class="fl">0.25</span>), <span class="at">lty =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a>                    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a>                                   <span class="at">y =</span> mean)) <span class="sc">+</span> </span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a>                    <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">x =</span> coefficient, </span>
+<span id="cb26-13"><a href="#cb26-13" tabindex="-1"></a>                                       <span class="at">ymin =</span> <span class="st">`</span><span class="at">0.025quant</span><span class="st">`</span>,</span>
+<span id="cb26-14"><a href="#cb26-14" tabindex="-1"></a>                                       <span class="at">ymax =</span> <span class="st">`</span><span class="at">0.975quant</span><span class="st">`</span>,</span>
+<span id="cb26-15"><a href="#cb26-15" tabindex="-1"></a>                                       <span class="at">col =</span> species),</span>
+<span id="cb26-16"><a href="#cb26-16" tabindex="-1"></a>                                       <span class="at">lwd =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a>                                       <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a>                    <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&#39;#003f5c&#39;</span>, <span class="st">&#39;#bc5090&#39;</span>,<span class="st">&#39;#ffa600&#39;</span>)) <span class="sc">+</span></span>
+<span id="cb26-19"><a href="#cb26-19" tabindex="-1"></a>                    <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">&quot;bottom&quot;</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a>                    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb26-21"><a href="#cb26-21" tabindex="-1"></a>                    <span class="fu">ggtitle</span>(<span class="st">&quot;95% credibility intervals of the fixed effects</span><span class="sc">\n</span></span>
+<span id="cb26-22"><a href="#cb26-22" tabindex="-1"></a><span class="st">                            for the three studied species&quot;</span>) <span class="sc">+</span></span>
+<span id="cb26-23"><a href="#cb26-23" tabindex="-1"></a>                    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&#39;Variable&#39;</span>, <span class="at">y =</span> <span class="st">&#39;Coefficient value&#39;</span>) <span class="sc">+</span></span>
+<span id="cb26-24"><a href="#cb26-24" tabindex="-1"></a>                    <span class="fu">coord_flip</span>()</span>
+<span id="cb26-25"><a href="#cb26-25" tabindex="-1"></a></span>
+<span id="cb26-26"><a href="#cb26-26" tabindex="-1"></a>coefficient_plot</span></code></pre></div>
 </div>
 <div id="datasetout" class="section level5">
 <h5><code>datasetOut</code></h5>
@@ -891,12 +892,12 @@ left out), using the predicted values as an offset in a new model, and
 then finding the difference between the marginal-likelihood of the full
 model (i.e the model with all the datasets considered) and the
 marginal-likelihood of the offset model.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>dataset_out <span class="ot">&lt;-</span> <span class="fu">datasetOut</span>(<span class="at">model =</span> joint_model,</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">dataset =</span> <span class="st">&quot;BBA&quot;</span>,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">predictions =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>dataset_out</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>dataset_out <span class="ot">&lt;-</span> <span class="fu">datasetOut</span>(<span class="at">model =</span> joint_model,</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>                          <span class="at">dataset =</span> <span class="st">&quot;BBA&quot;</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>                          <span class="at">predictions =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>dataset_out</span></code></pre></div>
 </div>
 <div id="predict" class="section level5">
 <h5><code>predict</code></h5>
@@ -908,10 +909,10 @@ will create the formula required by <em>inlabru</em>’s
 <code>predict</code> function to make predictive maps. In this example,
 we made predictions for the spatial fields of the species, on the linear
 scale using 1000 samples.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>projections <span class="ot">&lt;-</span> <span class="fu">predict</span>(joint_model, <span class="at">mesh =</span> mesh, <span class="at">mask =</span> PA, </span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">spatial =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">fun =</span> <span class="st">&#39;linear&#39;</span>, <span class="at">n.samples =</span> <span class="dv">1000</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>projections <span class="ot">&lt;-</span> <span class="fu">predict</span>(joint_model, <span class="at">mesh =</span> mesh, <span class="at">mask =</span> PA, </span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>                       <span class="at">spatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>                       <span class="at">fun =</span> <span class="st">&#39;linear&#39;</span>, <span class="at">n.samples =</span> <span class="dv">1000</span>)</span></code></pre></div>
 </div>
 <div id="plot-1" class="section level5">
 <h5><code>plot</code></h5>
@@ -919,9 +920,9 @@ scale using 1000 samples.</p>
 plot the maps using the predicted values obtained in the
 <code>predict</code> function. The plot below shows the predictions of
 the three spatial fields of our species.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(projections, <span class="at">whattoplot =</span> <span class="st">&#39;mean&#39;</span>, </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">colourLow =</span> <span class="st">&#39;orange&#39;</span>, <span class="at">colourHigh =</span> <span class="st">&#39;dark red&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a><span class="fu">plot</span>(projections, <span class="at">whattoplot =</span> <span class="st">&#39;mean&#39;</span>, </span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>     <span class="at">colourLow =</span> <span class="st">&#39;orange&#39;</span>, <span class="at">colourHigh =</span> <span class="st">&#39;dark red&#39;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="references" class="section level4 unnumbered">

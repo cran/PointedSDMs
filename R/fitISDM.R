@@ -18,7 +18,7 @@
 #'    
 #'  #Get Data
 #'  data("SolitaryTinamou")
-#'  proj <- CRS("+proj=longlat +ellps=WGS84")
+#'  proj <- "+proj=longlat +ellps=WGS84"
 #'  data <- SolitaryTinamou$datasets
 #'  mesh <- SolitaryTinamou$mesh
 #'  mesh$crs <- proj
@@ -94,11 +94,11 @@ fitISDM <- function(data, options = list()) {
     
     newIPS <- rep(list(data$.__enclos_env__$private$IPS), numTime)
     
-    newIPS <- do.call(sp::rbind.SpatialPointsDataFrame, newIPS)
+    newIPS <- do.call(rbind, newIPS)
     
-    newIPS@data[, data$.__enclos_env__$private$temporalName] <- rep((1:length(numTime)), each = nrow(data$.__enclos_env__$private$IPS@data))
+    newIPS[, data$.__enclos_env__$private$temporalName] <- rep(1:numTime, each = nrow(data$.__enclos_env__$private$IPS))
     
-    newIPS@proj4string <- data$.__enclos_env__$private$Projection
+    newIPS <- st_transform(newIPS, data$.__enclos_env__$private$Projection)
     
     data$.__enclos_env__$private$IPS <- newIPS
     

@@ -39,10 +39,10 @@ library(PointedSDMs)
 #  library(USAboundaries)
 #  library(sp)
 #  library(sf)
-#  library(raster)
-#  library(rasterVis)
+#  library(blockCV)
 #  library(ggmap)
 #  library(sn)
+#  library(terra)
 #  library(RColorBrewer)
 #  library(cowplot)
 #  library(knitr)
@@ -53,11 +53,11 @@ library(PointedSDMs)
 
 ## ----Map of PA----------------------------------------------------------------
 #  
-#  proj <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-#  
+#  proj <- '+proj=longlat +datum=WGS84 +no_defs'
 #  PA <- USAboundaries::us_states(states = "Pennsylvania")
-#  PA <- PA$geometry[1]
-#  PA <- as(PA, "Spatial")
+#  #PA <- PA$geometry
+#  PA <- as(PA, "sf")
+#  st_crs(PA) <- proj
 #  
 
 ## ---- get_eBird---------------------------------------------------------------
@@ -71,18 +71,19 @@ library(PointedSDMs)
 #                query = paste('Setophaga', bird),
 #                from = "gbif",
 #                date = c("2005-01-01", "2005-12-31"),
-#                geometry = PA@bbox)$gbif
+#                geometry = PA)$gbif
 #  
 #    rows <- grep("EBIRD", raw_data$data[[paste0('Setophaga_', bird)]]$collectionCode)
-#    cols <- c("longitude", "latitude")
-#    raw_coords <- data.frame(raw_data$data[[paste0('Setophaga_', bird)]][rows, cols])
 #  
-#    colnames(raw_coords) <- c("X", "Y")
+#    raw_data <- data.frame(raw_data$data[[1]][rows, ])
+#    raw_data$Species_name <- rep(bird, nrow(raw_data))
 #  
-#    data_sp <- SpatialPointsDataFrame(coords = raw_coords[, c('X', 'Y')],
-#                                                 data = data.frame(Species_name = rep(bird, nrow(raw_coords))),
-#                                                 proj4string = proj)
-#    dataSets[[paste0('eBird_', bird)]] <- data_sp[!is.na(over(data_sp, PA)),]
+#    data_sp <- st_as_sf(
+#      x = raw_data[, names(raw_data) %in% c("longitude", "latitude", 'Species_name')],
+#      coords = c('longitude', 'latitude'),
+#      crs = proj)
+#  
+#    dataSets[[paste0('eBird_', bird)]] <- data_sp[unlist(st_intersects(PA, data_sp)),]
 #  
 #    }
 #  
@@ -96,8 +97,10 @@ library(PointedSDMs)
 
 ## ----Covariate data, message = FALSE, warning = FALSE-------------------------
 #  
-#  covariates <- scale(stack(SetophagaData$elev_raster, SetophagaData$NLCD_canopy_raster))
+#  covariates <- scale(terra::rast(system.file('extdata/SetophagaCovariates.tif',
+#                                        package = "PointedSDMs")))
 #  names(covariates) <- c('elevation', 'canopy')
+#  crs(covariates) <- proj
 #  
 
 ## ----Mesh, warning = FALSE, message = FALSE, fig.width=8, fig.height=5--------
@@ -105,9 +108,8 @@ library(PointedSDMs)
 #  mesh <- inla.mesh.2d(boundary = inla.sp2segment(PA),
 #                       cutoff = 0.2,
 #                       max.edge = c(0.1, 0.24),
-#                       offset = c(0.1, 0.4))
-#  
-#  mesh$crs <- proj
+#                       offset = c(0.1, 0.4),
+#                       crs = st_crs(proj))
 #  
 #  mesh_plot <- ggplot() +
 #               gg(mesh) +
@@ -129,7 +131,7 @@ library(PointedSDMs)
 ## ----dataset plot, fig.width=8, fig.height=5----------------------------------
 #  
 #  spatial_data$plot(Boundary = FALSE) +
-#    gg(PA) +
+#    geom_sf(data = PA, fill = 'black', alpha = 0.15, lwd = 1.2) +
 #    theme_bw() +
 #    ggtitle('Plot of the datasets') +
 #    theme(plot.title = element_text(hjust = 0.5))
@@ -138,7 +140,7 @@ library(PointedSDMs)
 ## ----species plot, fig.width=8, fig.height=5----------------------------------
 #  
 #  spatial_data$plot(Species = TRUE, Boundary = FALSE) +
-#    gg(PA) +
+#    geom_sf(data = PA, fill = 'black', alpha = 0.15, lwd = 1.2) +
 #    theme_bw() +
 #    ggtitle('Plot of the species') +
 #    theme(plot.title = element_text(hjust = 0.5))
@@ -171,7 +173,7 @@ library(PointedSDMs)
 
 ## ----spatialBlock, warning = FALSE, message = FALSE,  fig.width=8, fig.height=5----
 #  
-#  spatial_data$spatialBlock(k = 4, rows = 2, cols = 2, plot = TRUE) + theme_bw()
+#  spatial_data$spatialBlock(k = 4, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
 #  
 
 ## ----blockedCV, warning = FALSE, eval = FALSE---------------------------------

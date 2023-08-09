@@ -15,7 +15,7 @@
 #'    
 #'  #Get Data
 #'  data("SolitaryTinamou")
-#'  proj <- CRS("+proj=longlat +ellps=WGS84")
+#'  proj <- "+proj=longlat +ellps=WGS84"
 #'  data <- SolitaryTinamou$datasets
 #'  mesh <- SolitaryTinamou$mesh
 #'  mesh$crs <- proj
@@ -40,8 +40,6 @@
 #' 
 #' @export
 #' 
-#' 
-#' 
 blockedCV <- function(data, options = list()) {
   
   #How do we do this?
@@ -58,7 +56,7 @@ blockedCV <- function(data, options = list()) {
   
   deviance <- list()
   
-  block_index <- lapply(unlist(data$.__enclos_env__$private$modelData), function(x) x@data[,'.__block_index__'])
+  block_index <- lapply(unlist(data$.__enclos_env__$private$modelData, recursive = FALSE), function(x) data.frame(x)[, '.__block_index__'])
   
   if (!is.null(data$.__enclos_env__$private$temporalName)) {
     
@@ -66,11 +64,11 @@ blockedCV <- function(data, options = list()) {
     
     newIPS <- rep(list(data$.__enclos_env__$private$IPS), numTime)
     
-    newIPS <- do.call(sp::rbind.SpatialPointsDataFrame, newIPS)
+    newIPS <- do.call(rbind, newIPS)
     
-    newIPS@data[, data$.__enclos_env__$private$temporalName] <- rep((1:length(numTime)), each = nrow(data$.__enclos_env__$private$IPS@data))
+    newIPS[, data$.__enclos_env__$private$temporalName] <- rep(1:numTime, each = nrow(data$.__enclos_env__$private$IPS))
     
-    newIPS@proj4string <- data$.__enclos_env__$private$Projection
+    newIPS <- st_transform(newIPS, data$.__enclos_env__$private$Projection)
     
     data$.__enclos_env__$private$IPS <- newIPS
     
@@ -109,7 +107,7 @@ blockedCV <- function(data, options = list()) {
       
     formula_terms <- unique(unlist(lapply(trainLiks, function(x) {
       
-      if (!is.null(x$include_components)) x$include_components
+      if (!identical(unlist(x$used), character(0))) unlist(x$used)
       else labels(terms(x$formula))
       
     })))
@@ -124,8 +122,8 @@ blockedCV <- function(data, options = list()) {
     
     fold_ind <- unique(unlist(block_index))[unique(unlist(block_index)) != fold]
     
-    foldOptions$control.family <- foldOptions$control.family[sapply(unlist(data$.__enclos_env__$private$modelData), 
-                                                                    function(x) any(fold_ind %in% x@data[, '.__block_index__']))]
+    foldOptions$control.family <- foldOptions$control.family[sapply(unlist(data$.__enclos_env__$private$modelData, recursive = FALSE), 
+                                                                    function(x) any(fold_ind %in% data.frame(x)[, '.__block_index__']))]
 
     optionsTrain <- append(options, foldOptions)
     

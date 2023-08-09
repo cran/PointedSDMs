@@ -21,6 +21,7 @@
   biasnames = NULL,
   predictor = FALSE,
   fun = "linear",
+  format = "sf",
   ...
 )
 }
@@ -53,9 +54,11 @@
 
 \item{biasnames}{Names of the datasets to include bias term. Defaults to \code{NULL}. Note: the chosen dataset needs to be run with a bias field first; this can be done using \code{.$addBias} with the object produced by \code{\link{intModel}}.}
 
-\item{predictor}{Should all terms run in the linear predictor be included in the predictions. Defaults to \code{FALSE}.}
+\item{predictor}{Should all terms (except the bias terms) included in the linear predictor be used in the predictions. Defaults to \code{FALSE}.}
 
 \item{fun}{Function used to predict. Set to \code{'linear'} if effects on the linear scale are desired.}
+
+\item{format}{Class of the data for which to predict on. Must be one of \code{'sp'}, \code{'sf'} or \code{'terra'}. Defaults to \code{'sf'}.}
 
 \item{...}{Additional arguments used by the inlabru \code{predict} function.}
 }
@@ -76,7 +79,7 @@ Predict for bru_sdm
    
  #Get Data
  data("SolitaryTinamou")
- proj <- CRS("+proj=longlat +ellps=WGS84")
+ proj <- "+proj=longlat +ellps=WGS84"
  data <- SolitaryTinamou$datasets
  mesh <- SolitaryTinamou$mesh
  mesh$crs <- proj
