@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(
 )
 
 
-## ---- load_packages-----------------------------------------------------------
+## ----load_packages------------------------------------------------------------
 #  
 #  library(PointedSDMs)
 #  library(inlabru)
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 #  library(sf)
 #  
 
-## ---- Alabama_map-------------------------------------------------------------
+## ----Alabama_map--------------------------------------------------------------
 #  
 #  proj <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 #  
@@ -35,12 +35,12 @@ knitr::opts_chunk$set(
 #  
 #  
 
-## ---- get_routes_data---------------------------------------------------------
+## ----get_routes_data----------------------------------------------------------
 #  
 #  data("BBSColinusVirginianus")
 #  
 
-## ---- get_eBird_data----------------------------------------------------------
+## ----get_eBird_data-----------------------------------------------------------
 #  
 #  eBird2015 <- spocc::occ(
 #    query = 'Colinus virginianus',
@@ -77,7 +77,7 @@ knitr::opts_chunk$set(
 #  eBird <- eBird[unlist(st_intersects(AL, eBird)),]
 #  
 
-## ---- setup_model-------------------------------------------------------------
+## ----setup_model--------------------------------------------------------------
 #  
 #  hyperParams <- list(rho = list(prior = "pc.prec", param = c(0.01, 0.01)))
 #  
@@ -91,23 +91,23 @@ knitr::opts_chunk$set(
 #                            prior.range = c(0.4, 0.01))
 #  
 
-## ---- data_plot,fig.width=8, fig.height=5-------------------------------------
+## ----data_plot,fig.width=8, fig.height=5--------------------------------------
 #  
 #  modelSetup$plot()
 #  
 
-## ---- model_components--------------------------------------------------------
+## ----model_components---------------------------------------------------------
 #  
 #  modelSetup$changeComponents()
 #  
 
-## ---- run_model---------------------------------------------------------------
+## ----run_model----------------------------------------------------------------
 #  
 #  mod <- fitISDM(modelSetup,
 #                  options = list(control.inla = list(int.strategy = 'eb')))
 #  
 
-## ---- predictions, fig.width=8, fig.height=5, message = FALSE-----------------
+## ----predictions, fig.width=8, fig.height=5, message = FALSE------------------
 #  
 #  preds <- predict(mod, mask = AL, mesh = mesh, temporal = TRUE, fun = '')
 #  

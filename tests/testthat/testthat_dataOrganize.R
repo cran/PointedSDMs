@@ -165,7 +165,7 @@ test_that('makeFormulas is able to make the correct formulas for the different p
             #Spatcovs is the names of the spatial covariates
             #specnesname is the name of the species variable
             Check$makeFormulas(spatcovs = 'spatcovs', speciesname = 'species', markintercept = TRUE,
-                               paresp = 'PAresp', countresp = 'counts', marksspatial = TRUE, speciesspatial = TRUE,
+                               paresp = 'PAresp', countresp = 'counts', marksspatial = TRUE, speciesspatial = 'individual',
                                marks = c('numvar', 'factvar', 'binommark'), temporalname = 'temp',
                                spatial = 'shared', intercept = TRUE, pointcovs = 'pointcov')
             
@@ -192,7 +192,7 @@ test_that('makeFormulas is able to make the correct formulas for the different p
                         'binommark ~ .')
             
             expect_setequal(Check$Formulas$PO$fish1$geometry$RHS,
-                          c("fish1_spatcovs", "fish1_spatial", "shared_spatial", "fish1_intercept"))
+                          c("fish1_spatcovs", "fish1_PO_spatial", "shared_spatial", "fish1_intercept"))
             expect_setequal(Check$Formulas$PO$fish1$numvar$RHS,
                             c("fish1_spatcovs", "numvar_intercept", "numvar_spatial"))
             expect_setequal(Check$Formulas$PO$fish1$factvar_response$RHS,
@@ -200,14 +200,14 @@ test_that('makeFormulas is able to make the correct formulas for the different p
                               "factvar_spatial", "factvar", "factvar_phi"))
             
             expect_setequal(Check$Formulas$PA$bird1$PAresp$RHS,
-                           c("bird1_spatcovs", "bird1_spatial", "shared_spatial", "bird1_intercept", "pointcov"))
+                           c("bird1_spatcovs", "bird1_PA_spatial", "shared_spatial", "bird1_intercept", "pointcov"))
             expect_setequal(Check$Formulas$PA$bird2$binommark$RHS,
                             c("bird2_spatcovs", "binommark_spatial", "binommark_intercept"))
             
             ##Change terms
              #Set spatial and intercept to FALSE
             Check$makeFormulas(spatcovs = 'spatcovs', speciesname = 'species', temporalname = 'temp',
-                               paresp = 'PAresp', countresp = 'counts', marksspatial = FALSE, speciesspatial = FALSE,
+                               paresp = 'PAresp', countresp = 'counts', marksspatial = FALSE, speciesspatial = NULL,
                                marks = c('numvar', 'factvar', 'binommark'), markintercept = FALSE,
                                spatial = NULL, intercept = FALSE, pointcovs = 'pointcov')
           
@@ -226,43 +226,43 @@ test_that('makeFormulas is able to make the correct formulas for the different p
             
             ##Change terms
             #Set spatcovs to NULL
-            Check$makeFormulas(spatcovs = NULL, speciesname = 'species', marksspatial = TRUE, speciesspatial = TRUE,
+            Check$makeFormulas(spatcovs = NULL, speciesname = 'species', marksspatial = TRUE, speciesspatial = 'individual',
                                paresp = 'PAresp', countresp = 'counts', markintercept = FALSE,
                                marks = c('numvar', 'factvar', 'binommark'), temporalname = 'temp',
                                spatial = 'shared', intercept = TRUE, pointcovs = 'pointcov')
             
             expect_setequal(Check$Formulas$PO$fish1$geometry$RHS,
-                            c("fish1_spatial", "shared_spatial", "fish1_intercept"))
+                            c("fish1_PO_spatial", "shared_spatial", "fish1_intercept"))
             expect_setequal(Check$Formulas$PO$fish1$numvar$RHS,
                             c("numvar_spatial"))
             expect_setequal(Check$Formulas$PO$fish1$factvar_response$RHS,
                             c("factvar_spatial", "factvar", "factvar_phi"))
             
             expect_setequal(Check$Formulas$PA$bird1$PAresp$RHS,
-                            c("bird1_spatial", "shared_spatial", "bird1_intercept", "pointcov"))
+                            c("bird1_PA_spatial", "shared_spatial", "bird1_intercept", "pointcov"))
             expect_setequal(Check$Formulas$PA$bird2$binommark$RHS,
                             c("binommark_spatial"))
             
             ##Try copy model
-            Check$makeFormulas(spatcovs = NULL, speciesname = 'species', marksspatial = TRUE, speciesspatial = TRUE,
+            Check$makeFormulas(spatcovs = NULL, speciesname = 'species', marksspatial = TRUE, speciesspatial = 'individual',
                                      paresp = 'PAresp', countresp = 'counts', markintercept = FALSE,
                                      marks = c('numvar', 'factvar', 'binommark'), temporalname = 'temp',
                                      spatial = 'copy', intercept = TRUE, pointcovs = 'pointcov')
             
             expect_setequal(Check$Formulas$PO$fish2$geometry$RHS,
-                            c("PO_spatial", "fish2_intercept", "fish2_spatial"))
+                            c('PO_spatial',"fish2_PO_spatial", "fish2_intercept"))
             expect_setequal(Check$Formulas$PO$fish1$geometry$RHS,
-                            c("PO_spatial", "fish1_intercept", "fish1_spatial"))
+                            c("PO_spatial", "fish1_intercept", "fish1_PO_spatial"))
             expect_setequal(Check$Formulas$PA$bird2$PAresp$RHS,
-                            c("PA_spatial", "bird2_intercept", 'pointcov', "bird2_spatial"))
+                            c("PA_spatial", "bird2_intercept", 'pointcov', "bird2_PA_spatial"))
             expect_setequal(Check$Formulas$PA$bird1$PAresp$RHS,
-                            c("PA_spatial", "bird1_intercept", "pointcov", "bird1_spatial"))
+                            c("PA_spatial", "bird1_intercept", "pointcov", "bird1_PA_spatial"))
             
             })
 
 #Change back to original
 Check$makeFormulas(spatcovs = 'spatcovs', speciesname = 'species', marksspatial = TRUE,
-                   paresp = 'PAresp', countresp = 'counts', markintercept = TRUE, speciesspatial = TRUE,
+                   paresp = 'PAresp', countresp = 'counts', markintercept = TRUE, speciesspatial = 'individual',
                    marks = c('numvar', 'factvar', 'binommark'), temporalname = 'temp',
                    spatial = 'shared', intercept = TRUE, pointcovs = 'pointcov')
 
@@ -272,14 +272,14 @@ test_that('makeComponents is able to make the correct components for all the pro
     comps <- Check$makeComponents(spatial = 'shared', intercepts = TRUE, datanames = c('PO','PA'), marksintercept = TRUE,
                          marks = c('numvar', 'factvar', 'binommark'), temporalmodel = deparse(list(model = "ar1")),
                          multinomnames = 'factvar', pointcovariates = 'pointcov', marksspatial = TRUE, offsetname = NULL,
-                         speciesname = 'species', covariatenames = 'spatcovs', temporalname = 'temp', speciesspatial = TRUE,
+                         speciesname = 'species', covariatenames = 'spatcovs', temporalname = 'temp', speciesspatial = 'individual',
                          covariateclass = 'numeric', numtime = 2, copymodel = Check$.__enclos_env__$private$copyModel)
     
     expect_setequal(comps,c("shared_spatial(main = geometry, model = shared_field, group = temp, ngroup = 2, control.group = list(model = \"ar1\"))",
-                            "fish2_spatial(main = geometry, model = fish2_field)",                                                                   
-                            "fish1_spatial(main = geometry, model = fish1_field)",                                                                   
-                            "bird2_spatial(main = geometry, model = bird2_field)",                                                                   
-                            "bird1_spatial(main = geometry, model = bird1_field)",                                                                   
+                            "fish2_PO_spatial(main = geometry, model = fish2_PO_field)",                                                                   
+                            "fish1_PO_spatial(main = geometry, model = fish1_PO_field)",                                                                   
+                            "bird2_PA_spatial(main = geometry, model = bird2_PA_field)",                                                                   
+                            "bird1_PA_spatial(main = geometry, model = bird1_PA_field)",                                                                   
                             "numvar_spatial(main = geometry, model = numvar_field, group = temp, ngroup = 2, control.group = list(model = \"ar1\"))"  ,                                                                 
                             "factvar_spatial(main = geometry, model = factvar_field, group = temp, ngroup = 2, control.group = list(model = \"ar1\"))",                                                               
                             "binommark_spatial(main = geometry, model = binommark_field, group = temp, ngroup = 2, control.group = list(model = \"ar1\"))",                                                           
@@ -302,13 +302,13 @@ test_that('makeComponents is able to make the correct components for all the pro
     comps2 <- Check$makeComponents(spatial = NULL, intercepts = FALSE, datanames = c('PO','PA'),
                                   marks = c('numvar', 'factvar', 'binommark'), marksspatial = FALSE, offsetname = NULL,
                                   multinomnames = 'factvar', pointcovariates = 'pointcov', marksintercept = FALSE,
-                                  speciesname = 'species', covariatenames = 'spatcovs', speciesspatial = TRUE,
+                                  speciesname = 'species', covariatenames = 'spatcovs', speciesspatial = 'individual',
                                   covariateclass = 'numeric', numtime =  2,  copymodel = Check$.__enclos_env__$private$copyModel)
     
-    expect_setequal(comps2,c("fish2_spatial(main = geometry, model = fish2_field)",                       
-                             "fish1_spatial(main = geometry, model = fish1_field)",                       
-                             "bird2_spatial(main = geometry, model = bird2_field)",                       
-                             "bird1_spatial(main = geometry, model = bird1_field)",                       
+    expect_setequal(comps2,c("fish2_PO_spatial(main = geometry, model = fish2_PO_field)",                       
+                             "fish1_PO_spatial(main = geometry, model = fish1_PO_field)",                       
+                             "bird2_PA_spatial(main = geometry, model = bird2_PA_field)",                       
+                             "bird1_PA_spatial(main = geometry, model = bird1_PA_field)",                       
                              "fish2_spatcovs(main = fish2_spatcovs, model = \"numeric\")",                   
                              "fish1_spatcovs(main = fish1_spatcovs, model = \"numeric\")",                   
                              "bird2_spatcovs(main = bird2_spatcovs, model = \"numeric\")",                   
@@ -321,15 +321,15 @@ test_that('makeComponents is able to make the correct components for all the pro
     compsCopy <- Check$makeComponents(spatial = 'copy', intercepts = FALSE, datanames = c('PO','PA'),
                          marks = c('numvar', 'factvar', 'binommark'), marksspatial = FALSE, offsetname = NULL,
                          multinomnames = 'factvar', pointcovariates = 'pointcov', marksintercept = FALSE,
-                         speciesname = 'species', covariatenames = 'spatcovs', speciesspatial = TRUE, temporalname = NULL,
+                         speciesname = 'species', covariatenames = 'spatcovs', speciesspatial = 'individual', temporalname = NULL,
                          covariateclass = 'numeric', numtime =  NULL,  copymodel = "list(beta = list(fixed = FALSE))")
     
     expect_setequal(compsCopy,c("PO_spatial(main = geometry, model = PO_field)",                                          
                              "PA_spatial(main = geometry, copy = \"PO_spatial\", hyper = list(beta = list(fixed = FALSE)))",
-                             "fish1_spatial(main = geometry, model = fish1_field)",                                  
-                             "fish2_spatial(main = geometry, model = fish2_field)",                                       
-                             "bird1_spatial(main = geometry, model = bird1_field)",                                       
-                             "bird2_spatial(main = geometry, model = bird2_field)",                                       
+                             "fish1_PO_spatial(main = geometry, model = fish1_PO_field)",                                  
+                             "fish2_PO_spatial(main = geometry, model = fish2_PO_field)",                                       
+                             "bird1_PA_spatial(main = geometry, model = bird1_PA_field)",                                       
+                             "bird2_PA_spatial(main = geometry, model = bird2_PA_field)",                                       
                              "fish1_spatcovs(main = fish1_spatcovs, model = \"numeric\")",                                   
                              "fish2_spatcovs(main = fish2_spatcovs, model = \"numeric\")",                                   
                              "bird1_spatcovs(main = bird1_spatcovs, model = \"numeric\")",                                   

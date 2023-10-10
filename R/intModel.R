@@ -9,8 +9,8 @@
 #' @param Projection The coordinate reference system used by both the spatial points and spatial covariates. Must be of class \code{character}.
 #' @param Mesh An \code{inla.mesh} object required for the spatial random fields and the integration points in the model (see \code{\link[INLA]{inla.mesh.2d}} from the \pkg{INLA} package for more details). 
 #' @param IPS The integration points to be used in the model (that is, the points on the map where the intensity of the model is calculated). See \code{\link[inlabru]{ipoints}} from the \pkg{inlabru} package for more details regarding these points; however defaults to \code{NULL} which will create integration points from the \code{Mesh} object.
-#' @param Boundary A \code{SpatialPolygonsDataFrame} object of the study area. If not missing, this object is used to help create the integration points.
-#' @param speciesSpatial Logical argument: should the species have their own individual spatial fields in the integrated model. Defaults to \code{TRUE}.
+#' @param Boundary A \code{sf} object of the study area. If not missing, this object is used to help create the integration points.
+#' @param speciesSpatial Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'} or \code{NULL} if no species-specific spatial effects should be estimated.
 #' @param markNames A vector with the mark names (class \code{character}) to be included in the integrated model. Marks are variables which are used to describe the individual points in the model (for example, in the field of ecology the size of the species or its feeding type could be considered). Defaults to \code{NULL}, however if this argument is non-\code{NULL}, the model run will become a marked point process. The marks must be included in the same data object as the points.
 #' @param markFamily A vector with the statistical families (class \code{character}) assumed for the marks. Must be the same length as markNames, and the position of the mark in the vector \code{markName} is associated with the position of the family in \code{markFamily}. Defaults to \code{NULL} which assigns each mark as "Gaussian".
 #' @param pointCovariates The non-spatial covariates to be included in the integrated model (for example, in the field of ecology the distance to the nearest road or time spent sampling could be considered). These covariates must be included in the same data object as the points.
@@ -74,7 +74,7 @@
 
 intModel <- function(..., spatialCovariates = NULL, Coordinates,
                      Projection, Mesh, IPS = NULL, 
-                     Boundary = NULL, speciesSpatial = TRUE,
+                     Boundary = NULL, speciesSpatial = 'copy',
                      markNames = NULL, markFamily = NULL,
                      pointCovariates = NULL, pointsIntercept = TRUE, marksIntercept = TRUE,
                      Offset = NULL, pointsSpatial = 'shared', marksSpatial = TRUE,
@@ -85,9 +85,11 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
   
   if (length(Coordinates) != 2) stop('Coordinates needs to be a vector of length 2 containing the coordinate names.')
   
+  if (!is.null(Boundary) && !inherits(Boundary, 'sf')) stop('Boundary needs to be an sf object.')
+  
   if (Coordinates[1] == Coordinates[2]) stop('Coordinates need to be unique values.')
   
-  if (inherits(Projection, 'CRS')) Projection <- as(Projection, 'character')
+  if (inherits(Projection, 'CRS') || inherits(Projection, 'crs')) Projection <- as(Projection, 'character')
   else if (!inherits(Projection, 'character')) stop('Projection needs to be a character object.')
   
   if (!inherits(Mesh, 'inla.mesh')) stop('Mesh needs to be a inla.mesh object.')

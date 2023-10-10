@@ -12,7 +12,7 @@ intModel(
   Mesh,
   IPS = NULL,
   Boundary = NULL,
-  speciesSpatial = TRUE,
+  speciesSpatial = "copy",
   markNames = NULL,
   markFamily = NULL,
   pointCovariates = NULL,
@@ -44,9 +44,9 @@ intModel(
 
 \item{IPS}{The integration points to be used in the model (that is, the points on the map where the intensity of the model is calculated). See \code{\link[inlabru]{ipoints}} from the \pkg{inlabru} package for more details regarding these points; however defaults to \code{NULL} which will create integration points from the \code{Mesh} object.}
 
-\item{Boundary}{A \code{SpatialPolygonsDataFrame} object of the study area. If not missing, this object is used to help create the integration points.}
+\item{Boundary}{A \code{sf} object of the study area. If not missing, this object is used to help create the integration points.}
 
-\item{speciesSpatial}{Logical argument: should the species have their own individual spatial fields in the integrated model. Defaults to \code{TRUE}.}
+\item{speciesSpatial}{Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'} or \code{NULL} if no species-specific spatial effects should be estimated.}
 
 \item{markNames}{A vector with the mark names (class \code{character}) to be included in the integrated model. Marks are variables which are used to describe the individual points in the model (for example, in the field of ecology the size of the species or its feeding type could be considered). Defaults to \code{NULL}, however if this argument is non-\code{NULL}, the model run will become a marked point process. The marks must be included in the same data object as the points.}
 

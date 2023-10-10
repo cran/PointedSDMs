@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -8,7 +8,7 @@ knitr::opts_chunk$set(
 )
 
 
-## ---- setup-------------------------------------------------------------------
+## ----setup--------------------------------------------------------------------
 #  library(spatstat)
 #  library(PointedSDMs)
 #  library(sf)
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 #  boundary <- Koala$boundary
 #  
 
-## ---- clean_data, echo = FALSE,fig.width=7, fig.height=5----------------------
+## ----clean_data, echo = FALSE,fig.width=7, fig.height=5-----------------------
 #  
 #  proj <- "+init=epsg:27700"
 #  
@@ -55,12 +55,12 @@ knitr::opts_chunk$set(
 #  
 #  
 
-## ---- analysis_of_data, eval = FALSE, echo= FALSE-----------------------------
+## ----analysis_of_data, eval = FALSE, echo= FALSE------------------------------
 #  
 #  data(euc) ##will add this in the future when data is on archive
 #  
 
-## ---- points_only,fig.width=7, fig.height=5-----------------------------------
+## ----points_only,fig.width=7, fig.height=5------------------------------------
 #  
 #  points <- intModel(euc, Coordinates = c('x', 'y'),
 #                    Projection = proj, Mesh = mesh)
@@ -72,7 +72,7 @@ knitr::opts_chunk$set(
 #  
 #  plot(pointsPredictions)
 
-## ---- include_marks,fig.width=7, fig.height=5---------------------------------
+## ----include_marks,fig.width=7, fig.height=5----------------------------------
 #  
 #  marks <- intModel(euc, Coordinates = c('x', 'y'), Projection = proj,
 #                    markNames = c('food', 'koala'), markFamily = c('gamma', 'poisson'),
@@ -90,7 +90,7 @@ knitr::opts_chunk$set(
 #  plot(foodPredictions)
 #  plot(koalaPredictions)
 
-## ---- marks_add_scaling,fig.width=7, fig.height=5-----------------------------
+## ----marks_add_scaling,fig.width=7, fig.height=5------------------------------
 #  
 #  marks2 <- intModel(euc, Coordinates = c('x', 'y'), Projection = proj,
 #                    markNames = 'food', markFamily = 'gaussian',
