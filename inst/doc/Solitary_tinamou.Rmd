@@ -52,7 +52,6 @@ datasets <- SolitaryTinamou$datasets
 region <- SolitaryTinamou$region
 mesh <- SolitaryTinamou$mesh
 
-
 ```
 
 The first item is a `list` of three datasets: *eBird*, *Gbif* and *Parks*. The first two are `data.frame` objects containing only two variables: `X` and `Y` describing the latitude and longitude coordinates of the species location respectively. As a result of this, these two datasets are considered to be *present only* datasets in our integrated model.
@@ -82,7 +81,7 @@ Finally we require a *Delaunay triangulated mesh* for the construction of the sp
 
 ```{r mesh, fig.width=8, fig.height=5}
 
-plot(mesh)
+ggplot() + gg(mesh)
 
 ```
 
@@ -133,10 +132,8 @@ Spatial fields are fundamental in our spatial species distribution models, and s
 
 ```{r set up model with fields, warning = FALSE, message = FALSE}
 
-
 fields <- intModel(datasets, Coordinates = c('X', 'Y'),
                    Projection = projection, Mesh = mesh, responsePA = 'Present', 
-                   Offset = 'area',
                    pointsIntercept = FALSE)
 
 ```
@@ -145,8 +142,8 @@ To specify the spatial field in the model, we use the slot function `$specifySpa
 
 ```{r specifySpatial}
 
-fields$specifySpatial(sharedSpatial = TRUE, prior.range = c(1,0.01), 
-                      prior.sigma = c(0.75, 0.05))
+fields$specifySpatial(sharedSpatial = TRUE, prior.range = c(50,0.01), 
+                      prior.sigma = c(0.1, 0.01))
 
 ```
 
@@ -175,7 +172,10 @@ If we would like to share the spatial fields across the linear predictors using 
 
 copy <- intModel(datasets, Coordinates = c('X', 'Y'),
                  Projection = projection, Mesh = mesh, responsePA = 'Present', 
-                 Offset = 'area', pointsSpatial = 'copy')
+                 pointsSpatial = 'copy')
+
+copy$specifySpatial(sharedSpatial = TRUE, prior.range = c(20,0.01), 
+                      prior.sigma = c(0.1, 0.01))
 
 copy$changeComponents()
 

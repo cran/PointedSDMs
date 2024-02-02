@@ -13,11 +13,13 @@ intModel(
   IPS = NULL,
   Boundary = NULL,
   speciesSpatial = "copy",
+  speciesIndependent = FALSE,
   markNames = NULL,
   markFamily = NULL,
   pointCovariates = NULL,
   pointsIntercept = TRUE,
   marksIntercept = TRUE,
+  speciesEffects = list(randomIntercept = FALSE, Environmental = TRUE),
   Offset = NULL,
   pointsSpatial = "shared",
   marksSpatial = TRUE,
@@ -46,7 +48,9 @@ intModel(
 
 \item{Boundary}{A \code{sf} object of the study area. If not missing, this object is used to help create the integration points.}
 
-\item{speciesSpatial}{Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'} or \code{NULL} if no species-specific spatial effects should be estimated.}
+\item{speciesSpatial}{Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'}, \code{'shared'} or \code{NULL} if no species-specific spatial effects should be estimated.}
+
+\item{speciesIndependent}{Logical argument: Should species effects be made independent of one another. Defaults to \code{FALSE} which creates effects for each species independently.}
 
 \item{markNames}{A vector with the mark names (class \code{character}) to be included in the integrated model. Marks are variables which are used to describe the individual points in the model (for example, in the field of ecology the size of the species or its feeding type could be considered). Defaults to \code{NULL}, however if this argument is non-\code{NULL}, the model run will become a marked point process. The marks must be included in the same data object as the points.}
 
@@ -57,6 +61,8 @@ intModel(
 \item{pointsIntercept}{Logical argument: should the points be modeled with intercepts. Defaults to \code{TRUE}.}
 
 \item{marksIntercept}{Logical argument: should the marks be modeled with intercepts. Defaults to \code{TRUE}.}
+
+\item{speciesEffects}{List specifying if intercept terms and environments effects should be made for the species. Defaults to \code{list(randomIntercept = FALSE, Environmental = TRUE)}. \code{randomIntercept} may take on three values: \code{TRUE} which creates a random intercept for each species, \code{FALSE} which creates fixed intercepts for each species, of \code{NULL} which removes all species level intercepts. Note that if \code{randomIntercept = NULL} and \code{pointsIntercept = TRUE}, dataset specific intercept terms will be created.}
 
 \item{Offset}{Name of the offset variable (class \code{character}) in the datasets. Defaults to \code{NULL}; if the argument is non-\code{NULL}, the variable name needs to be standardized across datasets (but does not need to be included in all datasets). The offset variable will be transformed onto the log-scale in the integrated model.}
 

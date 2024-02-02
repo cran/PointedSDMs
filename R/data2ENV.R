@@ -8,6 +8,10 @@
 
 data2ENV <- function(data, env) {
   
+  spatCovs <- FALSE
+  
+  if (spatCovs) {
+  
   if (!is.null(data$.__enclos_env__$private$spatcovsNames)) {
     
     spatCovs <- get(data$.__enclos_env__$private$spatcovsObj, 
@@ -16,7 +20,7 @@ data2ENV <- function(data, env) {
     #if (!inherits(spatCovs, 'Spatial')) spatCovs <- as(spatCovs, 'SpatialPixelsDataFrame')
     if (class(spatCovs) %in% c('RasterLayer', 'RasterBrick', 'RasterStack')) spatCovs <- terra::rast(spatCovs)
     
-    if (is.null(data$.__enclos_env__$private$speciesIn)) {
+    if (is.null(data$.__enclos_env__$private$speciesIn) || !data$.__enclos_env__$private$speciesEnvironment) {
       
       for (name in data$.__enclos_env__$private$spatcovsNames) {
         
@@ -65,17 +69,20 @@ data2ENV <- function(data, env) {
       }
     }
   }
-  
+  }
   if (!is.null(data$.__enclos_env__$private$speciesIn)) {
     
     if (!is.null(data$.__enclos_env__$private$speciesSpatial)) {
       
+      if (all(names(data$spatialFields$speciesFields) %in% 'speciesField')) assign('speciesField',  data$spatialFields$speciesFields[['speciesField']], envir = env)
+      else {
       for (species in names(data$spatialFields$speciesFields)) {
         
         assign(paste0(species,'_field'), data$spatialFields$speciesFields[[species]], envir = env)
         
       }
       
+        }
       
     }
     

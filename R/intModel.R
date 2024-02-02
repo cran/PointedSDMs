@@ -10,13 +10,15 @@
 #' @param Mesh An \code{inla.mesh} object required for the spatial random fields and the integration points in the model (see \code{\link[INLA]{inla.mesh.2d}} from the \pkg{INLA} package for more details). 
 #' @param IPS The integration points to be used in the model (that is, the points on the map where the intensity of the model is calculated). See \code{\link[inlabru]{ipoints}} from the \pkg{inlabru} package for more details regarding these points; however defaults to \code{NULL} which will create integration points from the \code{Mesh} object.
 #' @param Boundary A \code{sf} object of the study area. If not missing, this object is used to help create the integration points.
-#' @param speciesSpatial Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'} or \code{NULL} if no species-specific spatial effects should be estimated.
+#' @param speciesSpatial Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'}, \code{'shared'} or \code{NULL} if no species-specific spatial effects should be estimated.
+#' @param speciesIndependent Logical argument: Should species effects be made independent of one another. Defaults to \code{FALSE} which creates effects for each species independently.
 #' @param markNames A vector with the mark names (class \code{character}) to be included in the integrated model. Marks are variables which are used to describe the individual points in the model (for example, in the field of ecology the size of the species or its feeding type could be considered). Defaults to \code{NULL}, however if this argument is non-\code{NULL}, the model run will become a marked point process. The marks must be included in the same data object as the points.
 #' @param markFamily A vector with the statistical families (class \code{character}) assumed for the marks. Must be the same length as markNames, and the position of the mark in the vector \code{markName} is associated with the position of the family in \code{markFamily}. Defaults to \code{NULL} which assigns each mark as "Gaussian".
 #' @param pointCovariates The non-spatial covariates to be included in the integrated model (for example, in the field of ecology the distance to the nearest road or time spent sampling could be considered). These covariates must be included in the same data object as the points.
 #' @param Offset Name of the offset variable (class \code{character}) in the datasets. Defaults to \code{NULL}; if the argument is non-\code{NULL}, the variable name needs to be standardized across datasets (but does not need to be included in all datasets). The offset variable will be transformed onto the log-scale in the integrated model.
 #' @param pointsIntercept Logical argument: should the points be modeled with intercepts. Defaults to \code{TRUE}.
 #' @param marksIntercept Logical argument: should the marks be modeled with intercepts. Defaults to \code{TRUE}.
+#' @param speciesEffects List specifying if intercept terms and environments effects should be made for the species. Defaults to \code{list(randomIntercept = FALSE, Environmental = TRUE)}. \code{randomIntercept} may take on three values: \code{TRUE} which creates a random intercept for each species, \code{FALSE} which creates fixed intercepts for each species, of \code{NULL} which removes all species level intercepts. Note that if \code{randomIntercept = NULL} and \code{pointsIntercept = TRUE}, dataset specific intercept terms will be created.
 #' @param pointsSpatial Argument to determine whether the spatial field is shared between the datasets, or if each dataset has its own unique spatial field. The datasets may share a spatial field with \pkg{INLA}'s "copy" feature if the argument is set to \code{copy}. May take on the values: \code{"shared"}, \code{"individual"}, \code{"copy"} or \code{NULL} if no spatial field is required for the model. Defaults to \code{"shared"}.
 #' @param marksSpatial Logical argument: should the marks have their own spatial field. Defaults to \code{TRUE}.
 #' @param responseCounts Name of the response variable in the counts/abundance datasets. This variable name needs to be standardized across all counts datasets used in the integrated model. Defaults to \code{'counts'}.
@@ -75,8 +77,11 @@
 intModel <- function(..., spatialCovariates = NULL, Coordinates,
                      Projection, Mesh, IPS = NULL, 
                      Boundary = NULL, speciesSpatial = 'copy',
+                     speciesIndependent = FALSE,
                      markNames = NULL, markFamily = NULL,
-                     pointCovariates = NULL, pointsIntercept = TRUE, marksIntercept = TRUE,
+                     pointCovariates = NULL, 
+                     pointsIntercept = TRUE, marksIntercept = TRUE, 
+                     speciesEffects = list(randomIntercept = FALSE, Environmental = TRUE),
                      Offset = NULL, pointsSpatial = 'shared', marksSpatial = TRUE,
                      responseCounts = 'counts', responsePA = 'present', trialsPA = NULL,
                      trialsMarks = NULL, speciesName = NULL, temporalName = NULL,
@@ -119,13 +124,31 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
     ##Need something more here if object is list: get names from list
     if (length(datasetClass) == 1 && datasetClass == "list") {
       
+      if (!is.null(names(dataPoints[[1]]))) {
+      
+        dataList <- TRUE
+        dataNames <- names(dataPoints[[1]])
+        dataPoints <- unlist(dataPoints, recursive = FALSE)
+        datasetClass <- lapply(dataPoints, class)
+        
+      }
+      
+      else {
+        
       dataNames <- NULL
       dataPoints <- unlist(dataPoints, recursive = FALSE)
       datasetClass <- lapply(dataPoints, class)
       dataList <- TRUE
       
+      }
+      
     }
-    else dataList <- FALSE
+    else {
+      
+      dataList <- FALSE
+      datasetNames <- NULL
+      
+    }
     
     if (!all(unlist(datasetClass) %in% c("SpatialPointsDataFrame", "SpatialPoints", "data.frame", 'sf',
                                          'tbl', 'tbl_df'))) stop("Datasets need to be either a SpatialPoints* object, sf or a data frame.")
@@ -154,6 +177,7 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
         }
         
       }
+      else initialnames <- dataNames
     }
     else {
       
@@ -161,12 +185,23 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
                               as.character(match.call(expand.dots = FALSE)))
     }
     
-  } else initialnames <- NULL
+  } else {
+    
+   initialnames <- NULL
+    
+  }
   
   if (!is.null(temporalName)) temporalModel <- deparse1(temporalModel)
   
   if (is.null(pointsSpatial) || pointsSpatial == 'shared') copyModel <- NULL
   else copyModel <- deparse1(copyModel)
+  
+  if (!all(names(speciesEffects) %in% c('randomIntercept', 'Environmental'))) stop ('speciesEffects needs to be a named list with two items: randomIntercept and Environmental.')
+  
+  speciesIntercept <- speciesEffects$randomIntercept
+  speciesEnvironment <- speciesEffects$Environmental
+  
+  #if (!is.null(speciesName) && speciesIntercept) pointsIntercept <- FALSE
   
   bruData <- dataSDM$new(coordinates = Coordinates, projection = Projection,
                          Inlamesh = Mesh, initialnames = initialnames,
@@ -185,9 +220,12 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
                          spatialcovariates = spatialCovariates,
                          boundary = Boundary,
                          ips = IPS,
+                         speciesenvironment = speciesEnvironment,
+                         speciesintercept = speciesIntercept,
                          temporal = temporalName,
                          temporalmodel = temporalModel,
                          speciesspatial = speciesSpatial,
+                         speciesindependent = speciesIndependent,
                          offset = Offset,
                          copymodel = copyModel)
   

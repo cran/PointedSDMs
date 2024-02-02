@@ -73,6 +73,7 @@ dataSet <- function(datapoints, datanames, coords, proj, pointcovnames,
       
       if (inherits(datapoints[[dat]], 'sf')) {
         
+        st_geometry(datapoints[[dat]]) <- 'geometry'
         coordsSF <- sf::st_coordinates(datapoints[[dat]])
         colnames(coordsSF) <- coords
         datapoints[[dat]][, coords] <- coordsSF
@@ -158,6 +159,13 @@ dataSet <- function(datapoints, datanames, coords, proj, pointcovnames,
       
       }
       
+      if (!is.null(speciesname)) {
+        
+        speciesIndexVAR <- paste0(speciesname, 'INDEX_VAR')
+        data[, speciesIndexVAR] <- data[, speciesname]
+        
+      } else speciesIndexVAR <- NULL
+      
       if (paresp %in% data_vars) {
       if (!is.null(trialname)) {  
         if (!trialname %in% data_vars) subtrialname <- NULL
@@ -171,7 +179,7 @@ dataSet <- function(datapoints, datanames, coords, proj, pointcovnames,
         #                                                               phiVars, responseVars,varsin)]),
         #                                    proj4string = proj)
         datSP <- sf::st_as_sf(x = data.frame(data[, c(paresp, subtrialname, temporalvar,
-                              marksin, MTrialssub, speciesname, coords,
+                              marksin, MTrialssub, speciesname, coords, speciesIndexVAR,
                               phiVars, responseVars,varsin)]),
                               coords = coords,
                               crs = proj)
@@ -203,7 +211,7 @@ dataSet <- function(datapoints, datanames, coords, proj, pointcovnames,
           #                                    proj4string = proj)
           
           datSP <- sf::st_as_sf(x = data.frame(data[, c(countsresp, marksin, temporalvar,
-                                speciesname, MTrialssub, coords,
+                                speciesname, MTrialssub, coords, speciesIndexVAR,
                                 phiVars, responseVars, varsin)]),
                                 coords = coords,
                                 crs = proj)
@@ -232,7 +240,7 @@ dataSet <- function(datapoints, datanames, coords, proj, pointcovnames,
         #                                    proj4string = proj)
         
         datSP <- sf::st_as_sf(x = data.frame(data[, c(poresp, marksin, temporalvar,
-                              speciesname, MTrialssub, coords,
+                              speciesname, MTrialssub, coords, speciesIndexVAR,
                               phiVars, responseVars, varsin)]),
                               coords = coords,
                               crs = proj)

@@ -127,6 +127,22 @@ predict.bruSDM <- function(object, data = NULL, formula = NULL, mesh = NULL,
     else data <- inlabru::fm_int(mesh, format = format)
   }
   
+  if (!any(names(data) %in% object$spatCovs$name)) {
+    
+    for (spatCov in object$spatCovs$name) {
+      
+      if (!is.null(object$species$speciesIn) && object$species$speciesEffects$Environmental) covIndex <- paste0(unique(unlist(object$species$speciesIn)), '_', spatCov)
+      else covIndex <- spatCov
+      
+      data[, covIndex] <- inlabru::eval_spatial(where =  data, 
+                                                data = get('spatialcovariates', 
+                                                envir = object$spatCov$env),
+                                                layer = spatCov)
+        
+      
+    }
+
+  }
   
   if (is.null(formula)) {
     
@@ -213,15 +229,37 @@ predict.bruSDM <- function(object, data = NULL, formula = NULL, mesh = NULL,
       
       for (spec in speciesin) {
         
-        if (!is.null(covariates)) species_covs <- paste0(spec, '_', covariates)
+        if (!is.null(covariates)) {
+          
+          if (object[['species']][['speciesEffects']][['Environmental']]) species_covs <- paste0(spec, '_', covariates)
+          else species_covs <- covariates
+          
+        }
         else species_covs <- NULL
         
-        if (intercepts) species_int <- paste0(spec,'_intercept')
+        if (intercepts) {
+          
+          if (!object[['species']][['speciesEffects']][['Intercepts']]) {
+            
+            species_int <- paste0(spec,'_intercept')
+            
+          } else if (object[['species']][['speciesEffects']][['Intercepts']]) {
+              
+            species_int <- paste0(object[['species']][['speciesVar']], '_intercepts')
+            data <- fm_cprod(data, data.frame(speciesIndexREMOVE = 1:length(unique(unlist(object$species$speciesIn)))))
+            names(data)[names(data) == 'speciesIndexREMOVE'] <- object[['species']][['speciesVar']]
+            
+            
+            } else species_int <- NULL
+        
+        }
         else species_int <- NULL
         
         if (spatial) {
           
-          allSpat <- paste0(spec, '_', names(object$dataType), '_spatial')
+          allSpat <- c(paste0(spec, '_spatial'),
+                       paste0(spec, '_', names(object$dataType), '_spatial'),
+                       'speciesShared')
           
           species_spat <- allSpat[allSpat %in% names(object$summary.random)]
           

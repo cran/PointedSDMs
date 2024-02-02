@@ -1,10 +1,11 @@
-# PointedSDMs 1.3.1
+# PointedSDMs 1.3.2
 
 #### Changes and fixes since previous version:
 
--   Changed *SetophagaData* to an s*f* object.
--   Fixed issue regarding *crs* object coming from *sf.*
--   Fixed the multinomial model for when count data is considered.
--   Changed the speciesSpatial model: instead of being logical, the variable may now take on the values *NULL* (for no species specific spatial effects), *copy* to create a copy model of the spatial effect for the species across the dataset, or *individual* for creating independent spatial effects for each species.
--   Added additional checks to fix the errors regarding creating a *sf* polygon object from the mesh.
--   Documentation and spelling fixes.
+-   Added the argument *speciesIndependent* to `intModel`. This argument is logical and indicates if species effects should be made independently for species across datasets or not. Defaults to `FALSE`.
+-   Added the argument *speciesEffects* to `intModel`. This argument takes a list with two named items: *randomIntercepts* and *Environmental*, indicating if species should have their own environmental and (random )intercept effects.
+-   Added the option *shared* for *speciesSpatial* in `intModel`. This creates one random effect shared for all the species considered in the model.
+-   Added *shareModel* to `$addBias`: allows the user to share bias fields across different datasets.
+-   Changed the setup of the covariates: now completed in the dataset up stage rather than the modelling stage. Covariate data is now also added to the prediction data directly.
+-   Updates to the *Solitary_tinamou* vignette to add new *pc* priors to the different models.
+-   Removed *Raster* support for the spatial covariates

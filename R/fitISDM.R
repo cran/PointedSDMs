@@ -159,13 +159,18 @@ fitISDM <- function(data, options = list()) {
     
   }
   
+  if (data$.__enclos_env__$private$speciesIntercepts) row.names(inlaModel$summary.random[[paste0(data$.__enclos_env__$private$speciesName, '_intercepts')]]) <- data$.__enclos_env__$private$speciesTable[['species']]
+  
   inlaModel[['componentsJoint']] <- componentsJoint
   inlaModel[['optionsJoint']] <- optionsJoint
   inlaModel[['source']] <- as.vector(unlist(data$.__enclos_env__$private$dataSource))
   inlaModel[['spatCovs']] <- list(name = data$.__enclos_env__$private$spatcovsNames,
-                                  class = data$.__enclos_env__$private$ptcovsClass)
+                                  class = data$.__enclos_env__$private$ptcovsClass,
+                                  env = data$.__enclos_env__$private$spatcovsEnv)
   inlaModel[['species']] <- list(speciesIn = data$.__enclos_env__$private$speciesIn,
-                                 speciesVar = data$.__enclos_env__$private$speciesName)
+                                 speciesVar = data$.__enclos_env__$private$speciesName,
+                                 speciesEffects = list(Intercepts = data$.__enclos_env__$private$speciesIntercepts,
+                                                       Environmental = data$.__enclos_env__$private$speciesEnvironment))
   inlaModel[['dataType']] <- c(na.omit(data$.__enclos_env__$private$printSummary$Type),
                                na.omit(unlist(unname(data$.__enclos_env__$private$printSummary$marksType))))
   inlaModel[['marks']] <- list(marksIn = data$.__enclos_env__$private$printSummary$Marks,

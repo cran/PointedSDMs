@@ -32,7 +32,6 @@ knitr::opts_chunk$set(
 #  region <- SolitaryTinamou$region
 #  mesh <- SolitaryTinamou$mesh
 #  
-#  
 
 ## ----look at data-------------------------------------------------------------
 #  
@@ -49,7 +48,7 @@ knitr::opts_chunk$set(
 
 ## ----mesh, fig.width=8, fig.height=5------------------------------------------
 #  
-#  plot(mesh)
+#  ggplot() + gg(mesh)
 #  
 
 ## ----set up base model, warning = FALSE, message = FALSE----------------------
@@ -79,17 +78,15 @@ knitr::opts_chunk$set(
 
 ## ----set up model with fields, warning = FALSE, message = FALSE---------------
 #  
-#  
 #  fields <- intModel(datasets, Coordinates = c('X', 'Y'),
 #                     Projection = projection, Mesh = mesh, responsePA = 'Present',
-#                     Offset = 'area',
 #                     pointsIntercept = FALSE)
 #  
 
 ## ----specifySpatial-----------------------------------------------------------
 #  
-#  fields$specifySpatial(sharedSpatial = TRUE, prior.range = c(1,0.01),
-#                        prior.sigma = c(0.75, 0.05))
+#  fields$specifySpatial(sharedSpatial = TRUE, prior.range = c(50,0.01),
+#                        prior.sigma = c(0.1, 0.01))
 #  
 
 ## ----addBias------------------------------------------------------------------
@@ -107,7 +104,10 @@ knitr::opts_chunk$set(
 #  
 #  copy <- intModel(datasets, Coordinates = c('X', 'Y'),
 #                   Projection = projection, Mesh = mesh, responsePA = 'Present',
-#                   Offset = 'area', pointsSpatial = 'copy')
+#                   pointsSpatial = 'copy')
+#  
+#  copy$specifySpatial(sharedSpatial = TRUE, prior.range = c(20,0.01),
+#                        prior.sigma = c(0.1, 0.01))
 #  
 #  copy$changeComponents()
 #  

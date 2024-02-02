@@ -270,10 +270,23 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     if (length(datasetClass) == 1 && datasetClass == "list") {
       
-      dataNames <- NULL
-      dataPoints <- unlist(dataPoints, recursive = FALSE)
-      datasetClass <- lapply(dataPoints, class)
-      dataList <- TRUE
+      if (!is.null(names(dataPoints[[1]]))) {
+        
+        dataList <- TRUE
+        dataNames <- names(dataPoints[[1]])
+        dataPoints <- unlist(dataPoints, recursive = FALSE)
+        datasetClass <- lapply(dataPoints, class)
+        
+      }
+      
+      else {
+        
+        dataNames <- NULL
+        dataPoints <- unlist(dataPoints, recursive = FALSE)
+        datasetClass <- lapply(dataPoints, class)
+        dataList <- TRUE
+        
+      }
       
     }
     else dataList <- FALSE
@@ -301,7 +314,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
             private$initialNames <- dataNames
           }
           
-        }
+        } else private$initialnames <- dataNames
         
       }
     else {
@@ -580,17 +593,36 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       else private$speciesIn <- c(private$speciesIn, pointData$SpeciesInData)
       
       #ADD argument common field for species
-      self$spatialFields$speciesFields <- vector(mode = 'list', length = length(unique(unlist(private$speciesIn))) * length(names(private$speciesIn)))
+      if (!private$speciesIndependent) {
+        
+        self$spatialFields$speciesFields <- vector(mode = 'list', length = length(unique(unlist(private$speciesIn))) * length(names(private$speciesIn)))
+        names(self$spatialFields$speciesFields) <- do.call(paste0, expand.grid(paste0(unique(unlist(private$speciesIn)),'_'), names(private$speciesIn)))
+        speciesInd <- speciesIn
+        
+      }
+      else {
+        
+        self$spatialFields$speciesFields <-  vector(mode = 'list', length = length(unique(unlist(private$speciesIn))))
+        names(self$spatialFields$speciesFields) <- unique(unlist(private$speciesIn))
+        speciesInd <- do.call(paste0, expand.grid(paste0(speciesIn,'_'), names(private$speciesIn)))
+        
+      }
       
-      names(self$spatialFields$speciesFields) <- do.call(paste0, expand.grid(paste0(unique(unlist(private$speciesIn)),'_'), names(private$speciesIn)))
-     
       if (!is.null(private$speciesSpatial)) {
         
-        if (!all(do.call(paste0, expand.grid(paste0(speciesIn,'_'), names(private$speciesIn))) %in% names(self$spatialFields$speciesFields))) {
+        if (private$speciesSpatial == 'shared') {
+          
+          self$spatialFields$speciesFields <- list()
+          self$spatialFields$speciesFields[['speciesField']] <- INLA::inla.spde2.matern(mesh = private$INLAmesh)
+          
+        }
+        else {
+        
+          if (!all(speciesInd %in% names(self$spatialFields$speciesFields))) {
           ##Not species Name
 
-          new_species <- vector(mode = 'list', length = sum(!speciesIn %in% names(self$spatialFields$speciesFields)))
-          names(new_species) <- speciesIn[!speciesIn %in% names(self$spatialFields$speciesFields)]
+          new_species <- vector(mode = 'list', length = sum(!speciesInd %in% names(self$spatialFields$speciesFields)))
+          names(new_species) <- speciesInd[!speciesInd %in% names(self$spatialFields$speciesFields)]
      
           self$spatialFields$speciesFields <- append(self$spatialFields$speciesFields, new_species)
           
@@ -610,6 +642,7 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
         }
         
         
+        }
       }
     }
     
@@ -620,8 +653,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     ##Add here that if markSpatial then add mark_spatial
     #Also add markModel in the initial call.
     pointData$makeFormulas(spatcovs = private$spatcovsNames, speciesname = speciesName, temporalname = private$temporalName,
-                           paresp = responsePA, countresp = responseCounts, marksspatial = private$marksSpatial,
-                           marks = markNames, spatial = private$Spatial,
+                           paresp = responsePA, countresp = responseCounts, marksspatial = private$marksSpatial, speciesintercept = private$speciesIntercepts, 
+                           marks = markNames, spatial = private$Spatial, speciesindependent = private$speciesIndependent, speciesenvironment = private$speciesEnvironment,
                            intercept = private$Intercepts, markintercept = private$marksIntercepts, speciesspatial = private$speciesSpatial)
     
     if (!is.null(private$temporalName)) {
@@ -674,8 +707,11 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                                                      numtime = length(unique(unlist(private$temporalVars))),
                                                      temporalmodel = private$temporalModel,
                                                      speciesspatial = private$speciesSpatial,
+                                                     speciesintercept = private$speciesIntercepts,
+                                                     speciesenvironment = private$speciesEnvironment,
                                                      offsetname = private$Offset,
-                                                     copymodel = private$copyModel)
+                                                     copymodel = private$copyModel,
+                                                     speciesindependent = private$speciesIndependent)
       
     }
     else {
@@ -699,14 +735,63 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
                                                 temporalmodel = private$temporalModel,
                                                 temporalname = private$temporalName,
                                                 speciesspatial = private$speciesSpatial,
+                                                speciesintercept = private$speciesIntercepts,
+                                                speciesenvironment = private$speciesEnvironment,
                                                 offsetname = private$Offset,
-                                                copymodel = private$copyModel)
+                                                copymodel = private$copyModel,
+                                                speciesindependent = private$speciesIndependent)
       
       
       private$Components <- union(private$Components, newComponents)
       
       
     }
+    
+    if (!is.null(private$spatcovsNames)) {
+      
+      for (data in names(pointData$Data)) {
+        
+        for (species in 1:length(pointData$Data[[data]])) {
+        
+          for (cov in private$spatcovsNames) {
+          
+          if (!is.null(private$speciesName) && private$speciesEnvironment) covIndex <- paste0(pointData$SpeciesInData[[data]][species],'_', cov)
+          else covIndex <- cov
+          
+          pointData$Data[[data]][[species]][[covIndex]] <- inlabru::eval_spatial(where = pointData$Data[[data]][[species]], 
+                                                                                 data = get('spatialcovariates', 
+                                                                                 envir = private$spatcovsEnv),
+                                                                 layer = cov)
+        
+        }
+        
+        }
+      }
+
+      if (!is.null(private$IPS)) {
+        
+        for (covIPS in private$spatcovsNames) {
+          
+          if (!is.null(private$speciesName) && private$speciesEnvironment) covIPSindex <- paste0(unique(unlist(private$speciesIn)), '_', covIPS)
+          else covIPSindex <- covIPS
+          
+          for (covADD in covIPSindex) {
+          
+          private$IPS[[covADD]] <- inlabru::eval_spatial(where =  private$IPS, 
+                                                            data = get('spatialcovariates', 
+                                                                       envir = private$spatcovsEnv),
+                                                            layer = covIPS)
+          
+          }
+          
+          
+        }
+        
+        
+      }
+      
+    }
+    
     
     if (!is.null(c(private$Offset, private$pointCovariates))) {
       
@@ -730,8 +815,15 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     #                     markstrialsvar = trialsMarks,
     #                     speciesname = speciesName)
     
-    if (!is.null(private$speciesName)) newFamily <- mapply(function(family, number) rep(family , times = number), family = private$Family,
+    if (!is.null(private$speciesName)) {
+      
+      newFamily <- mapply(function(family, number) rep(family , times = number), family = private$Family,
                                                            number = lapply(private$speciesIn, length))
+      
+      private$speciesTable <- unique(do.call(rbind, lapply(unlist(pointData$Data, recursive = F), function(x) unique(data.frame(index = data.frame(x)[,private$speciesName], species = data.frame(x)[,paste0(private$speciesName, 'INDEX_VAR')])))))
+      private$speciesTable <- private$speciesTable[order(private$speciesTable$index),]
+      
+    }
     
     else newFamily <- pointData$Family
     
@@ -772,7 +864,13 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
     }
     
-    if (!is.null(private$initialnames)) private$initialnames <- NULL
+    if (!is.null(private$initialnames)) {
+      
+      private$originalNames <- private$initialnames
+      private$initialnames <- NULL
+    
+      
+      }
     
   }
   ,
@@ -780,6 +878,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
   #' @param datasetNames A vector of dataset names (class \code{character}) for which a bias field needs to be added to. If \code{NULL} (default), then \code{allPO} has to be \code{TRUE}.
   #' @param allPO Logical: should a bias field be added to all datasets classified as presence only in the integrated model. Defaults to \code{FALSE}.
   #' @param biasField An \code{inla.spde} object used to describe the bias field. Defaults to \code{NULL} which uses \code{\link[INLA]{inla.spde2.matern}} to create a Matern model for the field.
+  #' @param shareModel Share a bias field across the datasets specified with \code{datasetNames}. Defaults to \code{FALSE}.
+  #' @param copyModel Create copy models for all the of the datasets specified with either \code{datasetNames} or \code{allPO}. The first dataset in the vector will have its own spatial effect, and the other datasets will "copy" the effect with shared hyperparameters. Defaults to \code{FALSE.
   #' @param temporalModel List of model specifications given to the control.group argument in the time effect component. Defaults to \code{list(model = 'ar1')}; see \code{\link[INLA]{control.group}} from the \pkg{INLA} package for more details. \code{temporalName} needs to be specified in \code{intModel} prior.
   #' @examples
   #'  
@@ -803,13 +903,20 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
   addBias = function(datasetNames = NULL,
                      allPO = FALSE,
                      biasField = NULL,
+                     copyModel = FALSE,
+                     shareModel = FALSE,
                      temporalModel = list(model = 'ar1')) {
     
-    if (allPO) datasetNames <- names(private$printSummary)[private$printSummary == 'Present Only']
+    if (allPO) datasetNames <- names(private$printSummary$Type)[private$printSummary$Type == 'Present only']
     else
       if (is.null(datasetNames)) stop('Dataset names need to be given.')
     
     if (!all(datasetNames %in% private$dataSource)) stop('Dataset provided not available.')
+    
+    if (copyModel && length(datasetNames) < 2) warning('Turning copyModel off since the number of datasets specified is less than 2.')
+    
+    if (copyModel && shareModel) stop('Only one of copyModel and shareModel may be TRUE.')
+    
     
     for (dat in datasetNames) {
       
@@ -817,13 +924,22 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       
       for (lik in 1:length(private$Formulas[[dat]])) {
         
-        #private$modelData[[lik]]$formula <- update(private$modelData[[lik]]$formula, paste0(' ~ . + ', dat,'_bias_field'))
-        private$Formulas[[dat]][[lik]][[1]]$RHS <- c(private$Formulas[[dat]][[lik]][[1]]$RHS, paste0(dat, '_biasField'))
-        #private$modelData[[lik]]$include_components <- c(private$modelData[[lik]]$include_components, paste0(dat, '_biasField'))
+        if (!shareModel) private$Formulas[[dat]][[lik]][[1]]$RHS <- c(private$Formulas[[dat]][[lik]][[1]]$RHS, paste0(dat, '_biasField'))
+        else private$Formulas[[dat]][[lik]][[1]]$RHS <- c(private$Formulas[[dat]][[lik]][[1]]$RHS, paste0('sharedBias', '_biasField'))
+
       }
       
+      
+      if (!shareModel) {
       if (is.null(biasField)) self$spatialFields$biasFields[[dat]] <- INLA::inla.spde2.matern(mesh = private$INLAmesh)
       else self$spatialFields$biasFields[[dat]] <- biasField
+      }
+      else {
+        
+        if (is.null(biasField)) self$spatialFields$biasFields[['sharedBias']] <- INLA::inla.spde2.matern(mesh = private$INLAmesh)
+        else self$spatialFields$biasFields[['sharedBias']] <- biasField        
+      
+        }
       
     }
     
@@ -837,6 +953,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     if (!is.null(private$temporalName)) {
 
+      if (shareModel) private$Components <- c(private$Components, paste0('sharedBias_biasField(main = geometry, model = sharedBias_bias_field, group =', private$temporalName,', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      
       temporalModel <- deparse1(temporalModel)
       
       private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
@@ -845,7 +963,29 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     }
     else {
       
-      private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field)'))
+      if (!copyModel) {
+        
+        if (shareModel) private$Components <- c(private$Components, 'sharedBias_biasField(main = geometry, model = sharedBias_bias_field)')
+        else private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field)'))
+        
+      }
+      
+      else {
+        
+        biasComponents <- c() 
+        
+        for (bias in datasetNames) {
+          
+          if (match(bias, datasetNames) == 1)  biasComponents[bias] <- paste0(bias, '_biasField(main = geometry, model = ', bias
+                                                                              , '_bias_field)')
+          else biasComponents[bias] <- paste0(bias, '_biasField(main = geometry, copy = \"', datasetNames[1], '_biasField\")')
+          
+          
+        }
+        
+        private$Components <- c(private$Components, biasComponents)
+        
+      }
       
     }
     
@@ -1132,9 +1272,17 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
     
     if (!missing(addComponent)) {
       
-      if (any(gsub('\\(.*$', '', addComponent) %in% terms)) private$Components <- private$Components[! terms %in% gsub('\\(.*$', '', addComponent)]
+      if (inherits(addComponent, 'character')) addComponent <- formula(paste('~', addComponent))
       
-      private$Components <- c(private$Components, addComponent)
+      compTerms <- attr(terms(addComponent), 'term.labels')
+      
+      for (toAdd in 1:length(compTerms)) {
+      
+      if (any(gsub('\\(.*$', '', compTerms[toAdd]) %in% terms)) private$Components <- private$Components[! terms %in% gsub('\\(.*$', '', compTerms[toAdd])]
+      
+      private$Components <- c(private$Components, compTerms[toAdd])
+      
+      }
       
     } 
     
@@ -1205,8 +1353,13 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
         } 
         else {
           
-          if (is.null(Species)) Effect <- paste0(unique(unlist(private$speciesIn)), '_intercept')  #this won't work, unless we run a for loop...
-          else Effect <- paste0(Species, '_intercept')
+          if (is.null(Species)) Effect <- paste0(unique(unlist(private$speciesIn)), '_intercept')
+          else {
+            
+            if (private$speciesIntercepts) Effect <- paste0(Species, '_intercept')
+            else Effect <-  paste0(unique(unlist(private$speciesIn)), '_intercept')
+            
+          }
           
           
         }
@@ -1314,8 +1467,8 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       } else {
         
         field_type <- 'datasetFields'
-        if (!Remove) index <- private$initialNames[[1]]
-        else index <- private$initialNames[[1]]
+        if (!Remove) index <- private$originalNames[[1]]
+        else index <- private$originalNames[[1]]
       }
       
     }
@@ -1337,8 +1490,22 @@ dataSDM <- R6::R6Class(classname = 'dataSDM', lock_objects = FALSE, cloneable = 
       if (!Species %in% unlist(private$speciesIn)) stop('Species name provided is not currently in the model.')
       
       field_type <- 'speciesFields'
-      if (!Remove) index <- Species
-      else index <- do.call(paste0, expand.grid(paste0(Species, '_'), private$dataSource))
+      if (!Remove) {
+        
+        if (private$speciesSpatial == 'shared') index <- 'speciesField'
+        else
+          if (!private$speciesIndependent) index <- do.call(paste0, expand.grid(paste0(Species, '_'), private$dataSource))
+        else index <- Species
+        
+      }
+      else {
+      
+        if (private$speciesSpatial == 'shared') index <- 'speciesField'
+        else
+          if (!private$speciesIndependent) index <- do.call(paste0, expand.grid(paste0(Species, '_'), private$dataSource))
+        else index <-  paste0(Species, '_spatial')
+      
+      }
       
     }
     
@@ -1735,6 +1902,7 @@ dataSDM$set('private', 'blockedCV', FALSE)
 dataSDM$set('private', 'Formulas', list())
 dataSDM$set('private', 'Family', list())
 dataSDM$set('private', 'speciesIndex', list())
+dataSDM$set('private', 'speciesIndependent', TRUE)
 
 dataSDM$set('private', 'spatcovsObj', NULL)
 dataSDM$set('private', 'spatcovsNames', NULL)
@@ -1751,16 +1919,21 @@ dataSDM$set('private', 'multinomVars', NULL)
 dataSDM$set('private', 'printSummary', NULL)
 dataSDM$set('private', 'multinomIndex', list())
 dataSDM$set('private', 'optionsINLA', list())
+dataSDM$set('private', 'speciesTable', NULL)
 
 dataSDM$set('private', 'spatialBlockCall', NULL)
 dataSDM$set('private', 'Samplers', list())
+dataSDM$set('private', 'speciesIntercepts', TRUE)
+dataSDM$set('private', 'speciesEnvironment', TRUE)
 dataSDM$set('private', 'copyModel', NULL)
 dataSDM$set('private', 'datasetNames', NULL)
+dataSDM$set('private', 'originalNames', NULL)
 
 #' @description Initialize function for dataSDM: used to store some compulsory arguments. Please refer to the wrapper function, \code{intModel} for creating new dataSDM objects.
 #' @param coordinates A vector of length 2 containing the names of the coordinates.
 #' @param projection The projection of the data.
 #' @param Inlamesh An inla.mesh object.
+#' @param speciesindependent Independent species effects.
 #' @param initialnames The names of the datasets if data is passed through intModel.
 #' @param responsecounts The name of the response variable for the count data.
 #' @param responsepa The name of the response variable for the presence absence data.
@@ -1773,6 +1946,8 @@ dataSDM$set('private', 'datasetNames', NULL)
 #' @param marksspatial Should spatial fields be included for the marks
 #' @param spatial Logical argument describing if spatial effects should be included.
 #' @param intercepts Logical argument describing if intercepts should be included in the model.
+#' @param speciesintercept Logical argument indicating if species specific intercept terms should be created.
+#' @param speciesenvironment Logical argument indicating if species specific environmental terms should be created. 
 #' @param spatialcovariates Spatial covariates object used in the model.
 #' @param marksintercept Logical argument describing if the marks should have intercepts.
 #' @param boundary A polygon map of the study area.
@@ -1782,9 +1957,9 @@ dataSDM$set('private', 'datasetNames', NULL)
 #' @param copymodel List of the specifications for the hyper parameters for the \code{"copy"} model.
 
 dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh, initialnames,
-                                              responsecounts, responsepa, 
-                                              marksnames, marksfamily, pointcovariates,
-                                              trialspa, trialsmarks, speciesname, marksspatial,
+                                              responsecounts, responsepa, speciesindependent,
+                                              marksnames, marksfamily, pointcovariates, speciesintercept,
+                                              trialspa, trialsmarks, speciesname, marksspatial, speciesenvironment,
                                               spatial, intercepts, spatialcovariates, marksintercepts,
                                               boundary, ips, temporal, temporalmodel, speciesspatial, offset,
                                               copymodel) {
@@ -1811,7 +1986,13 @@ dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh,
   if (!missing(trialspa)) private$trialsPA <- trialspa
   if (!missing(trialsmarks)) private$trialsMarks <- trialsmarks
   
-  if (!missing(speciesname)) private$speciesName <- speciesname
+  if (!missing(speciesname) && !is.null(speciesname)) {
+    
+    private$speciesName <- speciesname
+    private$speciesSpatial <- speciesspatial
+    
+    
+  }
   
   if (!missing(temporal)) private$temporalName <- temporal
   private$temporalModel <- temporalmodel
@@ -1834,8 +2015,9 @@ dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh,
   if (!is.null(ips)) private$IPS <- ips
   else {
     
-    if (is.null(boundary)) private$IPS <- st_transform(inlabru::fm_int(samplers = boundary, domain = Inlamesh), projection)
+    if (!is.null(boundary)) private$IPS <- st_transform(inlabru::fm_int(samplers = boundary, domain = Inlamesh), projection)
     else private$IPS <- st_transform(inlabru::fm_int(domain = Inlamesh), projection)
+    
     
   }
   
@@ -1843,9 +2025,11 @@ dataSDM$set('public', 'initialize',  function(coordinates, projection, Inlamesh,
   private$marksSpatial <- marksspatial
   private$Intercepts <- intercepts
   private$marksIntercepts <- marksintercepts
+  private$speciesIntercepts <- speciesintercept
   
-  private$speciesSpatial <- speciesspatial
-  
+  #private$speciesSpatial <- speciesspatial
+  private$speciesIndependent <- speciesindependent
+  private$speciesEnvironment <- speciesenvironment
   #if (!private$Spatial && private$markSpatial) warning('Spatial has been set to FALSE but marksSpatial is TRUE. Spatial effects for the marks will still be run.')
   
   private$Coordinates <- coordinates
@@ -1890,9 +2074,8 @@ dataSDM$set('private', 'spatialCovariates', function(spatialCovariates) {
   } 
   else spatcovsEnv <- parent.frame()
   
-  if (!class(spatialCovariates) %in% c('RasterLayer', 'RasterBrick',
-                                       'RasterStack', 'SpatRaster',
-                                       'SpatialPixelsDataFrame')) stop('The spatial Covariates need to be a Raster* object or a SpatialPixelsDataFrame.')
+  if (!class(spatialCovariates) %in% c('SpatRaster',
+                                       'SpatialPixelsDataFrame')) stop('The spatial Covariates need to be a spatRaster object or a SpatialPixelsDataFrame.')
   
   spatcovsIncl <- names(spatialCovariates)
   

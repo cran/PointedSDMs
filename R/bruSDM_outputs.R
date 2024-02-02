@@ -56,7 +56,8 @@ summary.bruSDM <- function(object, ...) {
     }
   }
   
-  if (!is.null(object[['species']][['speciesIn']])) {
+  if (!is.null(object[['species']][['speciesIn']]) 
+      && any(unlist(object[['species']][['speciesEffects']]))) {
       
       cat('Summary of the fixed effects for the species:')
       cat('\n\n')
@@ -70,9 +71,17 @@ summary.bruSDM <- function(object, ...) {
           factorCovs <- do.call(rbind, object$summary.random[paste0(species, '_', object$spatCovs$name)])
           row.names(factorCovs) <- paste0(species, '_', factorCovs$ID)
           factorCovs$ID <- NULL
-        }
-        else factorCovs <- data.frame()
-        print.data.frame(rbind(object[['summary.fixed']][grepl(paste0('\\<',species,'_'), row.names(object[['summary.fixed']])),], factorCovs))   
+        } else factorCovs <- data.frame()
+        
+        if(object$species$speciesEffects$Intercepts) {
+          
+          interceptTerms <- object$summary.random[[paste0(object$species$speciesVar, '_intercepts')]]
+          interceptTerms <- interceptTerms[row.names(interceptTerms) == species,]
+          row.names(interceptTerms) <- paste0(row.names(interceptTerms), '_random_intercept')
+          interceptTerms$ID <- NULL
+          
+        } else interceptTerms <- data.frame()
+        print.data.frame(rbind(object[['summary.fixed']][grepl(paste0('\\<',species,'_'), row.names(object[['summary.fixed']])),], factorCovs, interceptTerms))   
         
         cat('\n')
         

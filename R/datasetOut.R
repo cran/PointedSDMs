@@ -75,7 +75,8 @@ datasetOut <- function(model, dataset,
     
     for (names in model[['spatCovs']][['name']]) {
       
-      if (!is.null(model[['species']][['speciesIn']])) {
+      if (!is.null(model[['species']][['speciesIn']]) &&
+          model[['species']][['speciesEffects']]$Environmental) {
      
       for (species in unique(unlist(model[['species']][['speciesIn']]))) {
        
@@ -83,11 +84,18 @@ datasetOut <- function(model, dataset,
         
       if (!is.null(model$spatial$species))  {
         
-        for (specField in paste0(species, '_', names(model$dataType))) {
+        specFieldIndex <- names(model$summary.random)[names(model$summary.random) %in% c('speciesShared',
+                                                                                         paste0(species, '_spatial'),
+                                                                                         paste0(species, '_', names(model$dataType)))]
+        
+        if (all(specFieldIndex %in% 'speciesShared')) assign('speciesField', model$bru_info_model$effects[['speciesField']]$env[['speciesField']])
+        else {
+        for (specField in specFieldIndex) {
         
         assign(paste0(specField,'_field'), model$bru_info$model$effects[[paste0(specField,'_field')]]$env[[paste0(specField,'_field')]])
           
-      }
+        }
+        }
         
       }
         
@@ -191,7 +199,9 @@ datasetOut <- function(model, dataset,
     model_reduced[['optionsJoint']] <- reduced_options
     model_reduced[['spatCovs']] <- model[['spatCovs']]
     model_reduced[['species']] <- list(speciesIn = model[['species']][['speciesIn']][!names(model[['species']][['speciesIn']]) %in% dataset],
-                                       speciesVar = model[['species']][['speciesVar']])
+                                       speciesVar = model[['species']][['speciesVar']],
+                                       speciesEffects = list(Intercepts = model[['species']][['speciesEffects']][['Intercepts']],
+                                                             Environmental = model[['species']][['speciesEffects']][['Environmental']]))
     
     model_reduced[['dataType']] <- model[['dataType']][index]
     model_reduced[['source']] <- model[['source']][index]

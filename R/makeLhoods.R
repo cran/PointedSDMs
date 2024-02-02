@@ -69,7 +69,7 @@ makeLhoods <- function(data, formula, family, mesh, ips,
           if (length(speciesindex) != 0) {
             
             speciesRep <- data.frame(rep(unique(data.frame(data[[dataset]][[species]])[,speciesname]), nrow(ips)))
-            
+            names(speciesRep) <- speciesname
             IPS <- ips
             IPS <- cbind(ips, speciesRep)
             
@@ -82,8 +82,8 @@ makeLhoods <- function(data, formula, family, mesh, ips,
         
         if (family[[dataset]][process] == 'cp' && any(pointcovs %in% names(data[[dataset]][[species]]))) {
           
-          pointcovsIn <- pointcovs[pointcovs %in%  names(data[[dataset]][[species]])]
-          formula[[dataset]][[species]][[process]][['LHS']] <- reformulate(deparse(formula[[dataset]][[species]][[process]][['LHS']][[3]]), paste0('coordinates + ', pointcovsIn))
+          #pointcovsIn <- pointcovs[pointcovs %in%  names(data[[dataset]][[species]])]
+          #formula[[dataset]][[species]][[process]][['LHS']] <- reformulate(deparse(formula[[dataset]][[species]][[process]][['LHS']][[3]]), paste0('geometry + ', pointcovsIn))
         
         }
         }
@@ -93,6 +93,7 @@ makeLhoods <- function(data, formula, family, mesh, ips,
                                                  Ntrials = Ntrials,
                                                  mesh = mesh,
                                                  ips = IPS,
+                                                 domain = list(geometry = mesh),
                                                  samplers = samplers[[names(data)[[dataset]]]],
                                                  family = family[[dataset]][process])
         

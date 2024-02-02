@@ -72,9 +72,12 @@ Internal functions used to temporarily store data and other information before a
   countresp,
   marks,
   marksspatial,
+  speciesintercept,
+  speciesenvironment,
   spatial,
   intercept,
   temporalname,
+  speciesindependent,
   markintercept,
   pointcovs,
   speciesspatial
@@ -101,10 +104,13 @@ Internal functions used to temporarily store data and other information before a
   marksintercept,
   temporalname,
   speciesspatial,
+  speciesenvironment,
+  speciesintercept,
   numtime,
   temporalmodel,
   offsetname,
-  copymodel
+  copymodel,
+  speciesindependent
 )}\if{html}{\out{</div>}}
 }
 
