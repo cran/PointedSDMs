@@ -1,7 +1,7 @@
 #' @title \emph{blockedCV}: run spatial blocked cross-validation on the integrated model.
 #' 
 #' @description This function is used to perform spatial blocked cross-validation with regards to model selection for the integrated model. It does so by leaving out a block of data in the full model, running a model with the remaining data, and then calculating the deviance information criteria (DIC) as a score of model fit.
-#' @param data An object produced by \code{\link{intModel}}. Requires the slot function, \code{.$spatialBlock} to be run first in order to specify how the data in the model is blocked.
+#' @param data An object produced by either \code{\link{startISDM}} of \code{\link{startSpecies}}. Requires the slot function, \code{.$spatialBlock} to be run first in order to specify how the data in the model is blocked.
 #' @param options A list of \pkg{INLA} or \pkg{inlabru} options to be used in the model. Defaults to \code{list()}.
 #' 
 #' @import inlabru
@@ -21,8 +21,9 @@
 #'  mesh$crs <- proj
 #'  
 #'  #Set model up
-#'  organizedData <- intModel(data, Mesh = mesh, Coordinates = c('X', 'Y'),
-#'                              Projection = proj)
+#'  organizedData <- startISDM(data, Mesh = mesh,
+#'                             responsePA = 'Present',
+#'                             Projection = proj)
 #'  
 #'  #Set up spatial block
 #'  organizedData$spatialBlock(k = 2, rows = 2, cols = 1)
@@ -46,7 +47,7 @@ blockedCV <- function(data, options = list()) {
    #Should we make data a list of data files;
    # or should we make another argument for thinned formulas to test based on the full model?
   
-  if (!inherits(data, 'dataSDM')) stop('data needs to be a dataSDM object.')
+  if (!inherits(data, 'dataSDM') && !inherits(data, 'specifySpecies') && !inherits(data, 'specifyISDM')) stop('data needs to be a dataSDM object.')
   
   if (is.null(data$.__enclos_env__$private$INLAmesh)) stop('An inla.mesh object is required before any model is run.')
   
@@ -85,7 +86,24 @@ blockedCV <- function(data, options = list()) {
       
       lapply(data, function(x) {
         
-        x[x$.__block_index__ != fold,]
+        data <- x[x$.__block_index__ != fold,]
+        if (nrow(data) > 0) data
+        else NULL
+        
+      })
+      
+      
+    })
+    
+    ##Check if all copy + bias Main in here
+    
+    testData <- lapply(data$.__enclos_env__$private$modelData, function(data) {
+      
+      lapply(data, function(x) {
+        
+        data <- x[x$.__block_index__ == fold,]
+        if (nrow(data) > 0) data
+        else NULL
         
       })
       
@@ -116,7 +134,37 @@ blockedCV <- function(data, options = list()) {
     
     comp_keep <- comp_terms %in% formula_terms
     
-    thinnedComponents <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
+    if (!all(comp_keep)) {
+      
+      if (data$.__enclos_env__$private$Spatial != 'shared' | data$.__enclos_env__$private$biasCopy) {
+        
+        Main <- grepl('_spatial', data$.__enclos_env__$private$Components) & grepl('_field', data$.__enclos_env__$private$Components)
+        if (!any(Main)) Main <- 'NOTMAIN'
+        else Main <- sub("\\(.*", "", comp_terms[Main])
+        
+        MainBias <- grepl('_biasField', data$.__enclos_env__$private$Components) & grepl('_bias_field', data$.__enclos_env__$private$Components)
+        if (!any(MainBias)) MainBias <- 'NOTALLMAINBIAS'
+        else MainBias <- sub("\\(.*", "", comp_terms[MainBias])
+        
+        whichMissing <- names(trainData)[sapply(unlist(trainData, recursive = F), is.null)]
+        warning('More than 2 datasets missing from the block with either pointsSpatial = "copy" or copyModel = TRUE for the bias field.\n Will choose the first available dataset to copy on.')
+        if(paste0(whichMissing[1],'_biasField') == MainBias | paste0(whichMissing[1],'_spatial') == Main) {
+          
+          thinnedComponents <- reduceComps(componentsOld =  formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components, collapse = ' + '))),
+                                            pointsCopy = ifelse(data$.__enclos_env__$private$Spatial == 'copy', 
+                                                                TRUE, FALSE),
+                                            biasCopy = data$.__enclos_env__$private$biasCopy,
+                                            datasetName = whichMissing[1],
+                                            reducedTerms = comp_terms[comp_keep])
+          
+        } else  thinnedComponents <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
+        
+        
+      } else thinnedComponents <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
+      
+      
+    }
+    else thinnedComponents <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
 
     foldOptions <- data$.__enclos_env__$private$optionsINLA
     
@@ -128,13 +176,18 @@ blockedCV <- function(data, options = list()) {
     optionsTrain <- append(options, foldOptions)
     
     ##Calculate DIC for just this model?
-    trainedModel <- inlabru::bru(components = thinnedComponents,
+    trainedModel <- try(inlabru::bru(components = thinnedComponents,
                                  trainLiks,
-                                 options = optionsTrain)
+                                 options = optionsTrain))
     
     ## -log(intensity)
     ## add an offset argument...
-    deviance[[paste0('DIC_fold_', fold)]] <- trainedModel$dic
+    if (inherits(trainedModel, 'try-error')) {
+      
+      warning('Model failed for a block. Please change your block layout to ensure all datasets are included in all blocks')
+      deviance[[paste0('DIC_fold_', fold)]] <- NA
+    }
+    else deviance[[paste0('DIC_fold_', fold)]] <- trainedModel$dic
     
     }
   
@@ -187,7 +240,7 @@ print.blockedCV <- function(x, ...) {
   print.data.frame(dataobj)
   
   cat('\nmean DIC score: ')
-  cat(mean(dataobj$dic))
+  cat(mean(dataobj$dic, na.rm = TRUE))
 
 
 }

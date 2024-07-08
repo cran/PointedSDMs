@@ -58,7 +58,9 @@ makeLhoods <- function(data, formula, family, mesh, ips,
             
             if (as.character(formula[[dataset]][[species]][[process]][['LHS']])[2] == paresp) Ntrials <- Ntrialsvar[[1]]
             
-            else Ntrials <- Ntrialsvar[[2]]
+            else 
+              if (!is.na(Ntrialsvar[[2]])) Ntrials <- Ntrialsvar[[2]]
+              else Ntrials <- 1
             
           } else Ntrials <- 1
         } 
@@ -71,11 +73,20 @@ makeLhoods <- function(data, formula, family, mesh, ips,
             speciesRep <- data.frame(rep(unique(data.frame(data[[dataset]][[species]])[,speciesname]), nrow(ips)))
             names(speciesRep) <- speciesname
             IPS <- ips
-            IPS <- cbind(ips, speciesRep)
+            
+            namesKeep <- names(IPS)[names(IPS) %in% c('weight', '.block',names(data[[dataset]][[species]]))]
+            IPS <- IPS[, namesKeep]
+            IPS <- cbind(IPS, speciesRep)
             
           }
           
         }
+        else 
+          if (!is.null(samplers[[names(data)[[dataset]]]])) {
+            
+            IPS <- NULL
+            
+          }
         else IPS <- ips
         
         if (!is.null(pointcovs)) {
@@ -87,6 +98,7 @@ makeLhoods <- function(data, formula, family, mesh, ips,
         
         }
         }
+          
         Likelihoods[[Likindex]] <- inlabru::like(formula = formula[[dataset]][[species]][[process]][['LHS']], ## but obs change these in function call
                                                  include = formula[[dataset]][[species]][[process]][['RHS']],
                                                  data = data[[dataset]][[species]], 

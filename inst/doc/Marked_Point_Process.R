@@ -40,7 +40,10 @@ knitr::opts_chunk$set(
 #  
 #  class(trees)
 #  
-#  mesh = inla.mesh.2d(boundary = boundary, max.edge = 20)
+#  mesh = inla.mesh.2d(boundary = boundary,
+#                      max.edge = c(10, 20),
+#                      offset = c(15,20),
+#                      cutoff = 2)
 #  mesh$crs <- st_crs(proj)
 #  
 #  ggplot() +
@@ -55,66 +58,87 @@ knitr::opts_chunk$set(
 #  
 #  
 
-## ----analysis_of_data, eval = FALSE, echo= FALSE------------------------------
-#  
-#  data(euc) ##will add this in the future when data is on archive
-#  
-
 ## ----points_only,fig.width=7, fig.height=5------------------------------------
 #  
-#  points <- intModel(euc, Coordinates = c('x', 'y'),
-#                    Projection = proj, Mesh = mesh)
+#  points <- startISDM(euc, Boundary = boundary,
+#                      Projection = proj,
+#                      Mesh = mesh)
+#  
+#  points$specifySpatial(sharedSpatial = TRUE,
+#                        prior.range = c(120, 0.1),
+#                        prior.sigma = c(1, 0.1))
 #  
 #  pointsModel <- fitISDM(points, options = list(control.inla = list(int.strategy = 'eb')))
 #  
 #  pointsPredictions <- predict(pointsModel, mask = boundary,
 #                               mesh = mesh, predictor = TRUE)
 #  
-#  plot(pointsPredictions)
+#  pointsPlot <- plot(pointsPredictions, variable = 'mean',
+#                     plot = FALSE)
+#  
+#  pointsPlot$predictions$predictions$mean +
+#    gg(euc)
+#  
 
 ## ----include_marks,fig.width=7, fig.height=5----------------------------------
 #  
-#  marks <- intModel(euc, Coordinates = c('x', 'y'), Projection = proj,
-#                    markNames = c('food', 'koala'), markFamily = c('gamma', 'poisson'),
-#                    Mesh = mesh)
+#  marks <- startMarks(euc, Boundary = boundary,
+#                      Projection = proj,
+#                      markNames = c('food', 'koala'),
+#                      markFamily = c('gamma', 'poisson'),
+#                      Mesh = mesh)
+#  
+#  marks$specifySpatial(sharedSpatial = TRUE,
+#                        prior.range = c(120, 0.1),
+#                        prior.sigma = c(1, 0.1))
+#  
+#  marks$specifySpatial(Mark = 'koala',
+#                       prior.range = c(120, 0.1),
+#                       prior.sigma = c(1, 0.1))
+#  
+#  marks$specifySpatial(Mark = 'food',
+#                       prior.range = c(60, 0.1),
+#                       prior.sigma = c(1, 0.1))
 #  
 #  marksModel <- fitISDM(marks, options = list(control.inla = list(int.strategy = 'eb'),
 #                                               safe = TRUE))
 #  
 #  foodPredictions <- predict(marksModel, mask = boundary,
-#                             mesh = mesh, marks = 'food', spatial = TRUE)
+#                             mesh = mesh, marks = 'food', spatial = TRUE,
+#                             fun = 'exp')
 #  
 #  koalaPredictions <- predict(marksModel, mask = boundary,
 #                              mesh = mesh, marks = 'koala', spatial = TRUE)
 #  
-#  plot(foodPredictions)
-#  plot(koalaPredictions)
+#  plot(foodPredictions, variable = c('mean', 'sd'))
+#  plot(koalaPredictions, variable = c('mean', 'sd'))
 
 ## ----marks_add_scaling,fig.width=7, fig.height=5------------------------------
 #  
-#  marks2 <- intModel(euc, Coordinates = c('x', 'y'), Projection = proj,
-#                    markNames = 'food', markFamily = 'gaussian',
-#                    Mesh = mesh, pointsSpatial = 'individual')
+#  marks2 <- startMarks(euc, Boundary = boundary,
+#                       Projection = proj,
+#                       markNames = 'food',
+#                       markFamily = 'gaussian',
+#                       Mesh = mesh)
 #  
-#  marks2$updateFormula(markName = 'food',
-#        newFormula = ~ exp(food_intercept + (euc_spatial + 1e-6)*scaling + food_spatial))
+#  marks2$updateFormula(Mark = 'food',
+#        newFormula = ~ exp(food_intercept + (shared_spatial + 1e-6)*scaling + food_spatial))
 #  
-#  marks2$changeComponents(addComponent = 'scaling')
+#  marks2$changeComponents(addComponent = 'scaling(1)')
 #  
-#  marks2$specifySpatial(datasetName = 'euc',
-#                        prior.sigma = c(0.1, 0.01),
-#                        prior.range = c(10, 0.01))
+#  marks2$specifySpatial(sharedSpatial = TRUE,
+#                        prior.sigma = c(1, 0.01),
+#                        prior.range = c(120, 0.01))
 #  
 #  marks2$specifySpatial(Mark = 'food',
-#                        prior.sigma = c(0.1, 0.01),
-#                        prior.range = c(10, 0.01))
+#                        prior.sigma = c(1, 0.01),
+#                        prior.range = c(120, 0.01))
 #  
 #  marksModel2 <- fitISDM(marks2, options = list(control.inla = list(int.strategy = 'eb'),
 #                                                bru_max_iter = 2, safe = TRUE))
 #  
-#  
 #  predsMarks2 <- predict(marksModel2, mask = boundary, mesh = mesh,
-#      formula =  ~ (food_intercept + (euc_spatial + 1e-6)*scaling + food_spatial))
+#      formula =  ~ (food_intercept + (shared_spatial + 1e-6)*scaling + food_spatial))
 #  
 #  plot(predsMarks2)
 

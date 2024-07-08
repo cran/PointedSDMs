@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philip Mostert" />
 
-<meta name="date" content="2024-02-02" />
+<meta name="date" content="2024-07-08" />
 
 <title>Marked Point Process</title>
 
@@ -51,7 +51,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -150,6 +150,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
+margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -362,7 +363,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Marked Point Process</h1>
 <h4 class="author">Philip Mostert</h4>
-<h4 class="date">2024-02-02</h4>
+<h4 class="date">2024-07-08</h4>
 
 
 
@@ -400,36 +401,60 @@ data are provided below so that the user may carry out inference.</p>
 example, we will assume that these locations are treated as
 <em>present-only</em> data.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>points <span class="ot">&lt;-</span> <span class="fu">intModel</span>(euc, <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;x&#39;</span>, <span class="st">&#39;y&#39;</span>), </span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                  <span class="at">Projection =</span> proj, <span class="at">Mesh =</span> mesh)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>pointsModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(points, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>pointsPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(pointsModel, <span class="at">mask =</span> boundary,</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                             <span class="at">mesh =</span> mesh, <span class="at">predictor =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>points <span class="ot">&lt;-</span> <span class="fu">startISDM</span>(euc, <span class="at">Boundary =</span> boundary,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                    <span class="at">Projection =</span> proj, </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>                    <span class="at">Mesh =</span> mesh)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>points<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="fl">0.1</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.1</span>))</span>
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">plot</span>(pointsPredictions)</span></code></pre></div>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>pointsModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(points, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>pointsPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(pointsModel, <span class="at">mask =</span> boundary,</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>                             <span class="at">mesh =</span> mesh, <span class="at">predictor =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>pointsPlot <span class="ot">&lt;-</span> <span class="fu">plot</span>(pointsPredictions, <span class="at">variable =</span> <span class="st">&#39;mean&#39;</span>, </span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>                   <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>pointsPlot<span class="sc">$</span>predictions<span class="sc">$</span>predictions<span class="sc">$</span>mean <span class="sc">+</span> </span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="fu">gg</span>(euc)</span></code></pre></div>
 <p>Now lets add the marks to this framework by specifying the name of
 the response variable of the marks with the argument
 <code>markNames</code>, and the family of the marks with the argument
 <code>markFamily</code>. Doing so will model each marks as a separate
 observation process, based on the family specified.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">intModel</span>(euc, <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;x&#39;</span>, <span class="st">&#39;y&#39;</span>), <span class="at">Projection =</span> proj,</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                  <span class="at">markNames =</span> <span class="fu">c</span>(<span class="st">&#39;food&#39;</span>, <span class="st">&#39;koala&#39;</span>), <span class="at">markFamily =</span> <span class="fu">c</span>(<span class="st">&#39;gamma&#39;</span>, <span class="st">&#39;poisson&#39;</span>),</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                  <span class="at">Mesh =</span> mesh)</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>marksModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(marks, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>),</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                                             <span class="at">safe =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>foodPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel, <span class="at">mask =</span> boundary, </span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>                           <span class="at">mesh =</span> mesh, <span class="at">marks =</span> <span class="st">&#39;food&#39;</span>, <span class="at">spatial =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">startMarks</span>(euc, <span class="at">Boundary =</span> boundary,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                    <span class="at">Projection =</span> proj,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                    <span class="at">markNames =</span> <span class="fu">c</span>(<span class="st">&#39;food&#39;</span>, <span class="st">&#39;koala&#39;</span>), </span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                    <span class="at">markFamily =</span> <span class="fu">c</span>(<span class="st">&#39;gamma&#39;</span>, <span class="st">&#39;poisson&#39;</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>                    <span class="at">Mesh =</span> mesh)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>marks<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="fl">0.1</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.1</span>))</span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>koalaPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel, <span class="at">mask =</span> boundary, </span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>                            <span class="at">mesh =</span> mesh, <span class="at">marks =</span> <span class="st">&#39;koala&#39;</span>, <span class="at">spatial =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="fu">plot</span>(foodPredictions)</span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="fu">plot</span>(koalaPredictions)</span></code></pre></div>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>marks<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">Mark =</span> <span class="st">&#39;koala&#39;</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>                     <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="fl">0.1</span>),</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>                     <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.1</span>))</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>marks<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">Mark =</span> <span class="st">&#39;food&#39;</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>                     <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">60</span>, <span class="fl">0.1</span>),</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>                     <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.1</span>))</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>marksModel <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(marks, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>),</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>                                             <span class="at">safe =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>foodPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel, <span class="at">mask =</span> boundary, </span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>                           <span class="at">mesh =</span> mesh, <span class="at">marks =</span> <span class="st">&#39;food&#39;</span>, <span class="at">spatial =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>                           <span class="at">fun =</span> <span class="st">&#39;exp&#39;</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>koalaPredictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel, <span class="at">mask =</span> boundary, </span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>                            <span class="at">mesh =</span> mesh, <span class="at">marks =</span> <span class="st">&#39;koala&#39;</span>, <span class="at">spatial =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="fu">plot</span>(foodPredictions, <span class="at">variable =</span> <span class="fu">c</span>(<span class="st">&#39;mean&#39;</span>, <span class="st">&#39;sd&#39;</span>))</span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="fu">plot</span>(koalaPredictions, <span class="at">variable =</span> <span class="fu">c</span>(<span class="st">&#39;mean&#39;</span>, <span class="st">&#39;sd&#39;</span>))</span></code></pre></div>
 <p>For the second mark model we only include the <em>food</em> mark, but
 this time we use a <em>log-linear</em> model with additive Gaussian
 noise. This is specified using the <code>.$updateFormula</code> slot
@@ -440,32 +465,33 @@ function to ensure that it is actually estimated. Moreover we assume
 well as specify <em>bru_max_iter</em> in the <em>options</em> argument
 to keep the time to estimate down.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>marks2 <span class="ot">&lt;-</span> <span class="fu">intModel</span>(euc, <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;x&#39;</span>, <span class="st">&#39;y&#39;</span>), <span class="at">Projection =</span> proj,</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                  <span class="at">markNames =</span> <span class="st">&#39;food&#39;</span>, <span class="at">markFamily =</span> <span class="st">&#39;gaussian&#39;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                  <span class="at">Mesh =</span> mesh, <span class="at">pointsSpatial =</span> <span class="st">&#39;individual&#39;</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">updateFormula</span>(<span class="at">markName =</span> <span class="st">&#39;food&#39;</span>, </span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>      <span class="at">newFormula =</span> <span class="sc">~</span> <span class="fu">exp</span>(food_intercept <span class="sc">+</span> (euc_spatial <span class="sc">+</span> <span class="fl">1e-6</span>)<span class="sc">*</span>scaling <span class="sc">+</span> food_spatial))</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">changeComponents</span>(<span class="at">addComponent =</span> <span class="st">&#39;scaling&#39;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>marks2 <span class="ot">&lt;-</span> <span class="fu">startMarks</span>(euc, <span class="at">Boundary =</span> boundary,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                     <span class="at">Projection =</span> proj,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                     <span class="at">markNames =</span> <span class="st">&#39;food&#39;</span>, </span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                     <span class="at">markFamily =</span> <span class="st">&#39;gaussian&#39;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                     <span class="at">Mesh =</span> mesh)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">updateFormula</span>(<span class="at">Mark =</span> <span class="st">&#39;food&#39;</span>, </span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>      <span class="at">newFormula =</span> <span class="sc">~</span> <span class="fu">exp</span>(food_intercept <span class="sc">+</span> (shared_spatial <span class="sc">+</span> <span class="fl">1e-6</span>)<span class="sc">*</span>scaling <span class="sc">+</span> food_spatial))</span>
 <span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">datasetName =</span> <span class="st">&#39;euc&#39;</span>, </span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.01</span>), </span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="fl">0.01</span>))</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">Mark =</span> <span class="st">&#39;food&#39;</span>,  </span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.01</span>), </span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="fl">0.01</span>))</span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>marksModel2 <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(marks2, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>),</span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>                                              <span class="at">bru_max_iter =</span> <span class="dv">2</span>, <span class="at">safe =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>predsMarks2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel2, <span class="at">mask =</span> boundary, <span class="at">mesh =</span> mesh,</span>
-<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> (food_intercept <span class="sc">+</span> (euc_spatial <span class="sc">+</span> <span class="fl">1e-6</span>)<span class="sc">*</span>scaling <span class="sc">+</span> food_spatial))</span>
-<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="fu">plot</span>(predsMarks2)</span></code></pre></div>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">changeComponents</span>(<span class="at">addComponent =</span> <span class="st">&#39;scaling(1)&#39;</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>), </span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="fl">0.01</span>))</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>marks2<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">Mark =</span> <span class="st">&#39;food&#39;</span>,  </span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>                      <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.01</span>), </span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>                      <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">120</span>, <span class="fl">0.01</span>))</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>marksModel2 <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(marks2, <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>),</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>                                              <span class="at">bru_max_iter =</span> <span class="dv">2</span>, <span class="at">safe =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>predsMarks2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(marksModel2, <span class="at">mask =</span> boundary, <span class="at">mesh =</span> mesh,</span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>    <span class="at">formula =</span>  <span class="sc">~</span> (food_intercept <span class="sc">+</span> (shared_spatial <span class="sc">+</span> <span class="fl">1e-6</span>)<span class="sc">*</span>scaling <span class="sc">+</span> food_spatial))</span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="fu">plot</span>(predsMarks2)</span></code></pre></div>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-illian2012toolbox" class="csl-entry">
 Illian, Janine B, Sigrunn H Sørbye, and Håvard Rue. 2012. <span>“A
 Toolbox for Fitting Complex Spatial Point Process Models Using

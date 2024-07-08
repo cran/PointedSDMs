@@ -12,9 +12,14 @@ knitr::opts_chunk$set(
 library(PointedSDMs)
 
 
-## ----intModel-----------------------------------------------------------------
+## ----startISDM----------------------------------------------------------------
 #  
-#  args(intModel)
+#  args(startISDM)
+#  
+
+## ----startSpecies-------------------------------------------------------------
+#  
+#  args(startSpecies)
 #  
 
 ## ----fitISDM------------------------------------------------------------------
@@ -37,7 +42,6 @@ library(PointedSDMs)
 #  library(INLA)
 #  library(inlabru)
 #  library(USAboundaries)
-#  library(sp)
 #  library(sf)
 #  library(blockCV)
 #  library(ggmap)
@@ -53,11 +57,11 @@ library(PointedSDMs)
 
 ## ----Map of PA----------------------------------------------------------------
 #  
-#  proj <- '+proj=longlat +datum=WGS84 +no_defs'
+#  proj <- "+proj=utm +zone=17 +datum=WGS84 +units=km"
+#  
 #  PA <- USAboundaries::us_states(states = "Pennsylvania")
-#  #PA <- PA$geometry
-#  PA <- as(PA, "sf")
-#  st_crs(PA) <- proj
+#  
+#  PA <- st_transform(PA, proj)
 #  
 
 ## ----get_eBird----------------------------------------------------------------
@@ -71,7 +75,8 @@ library(PointedSDMs)
 #                query = paste('Setophaga', bird),
 #                from = "gbif",
 #                date = c("2005-01-01", "2005-12-31"),
-#                geometry = PA)$gbif
+#                geometry = st_bbox(st_transform(PA,
+#                  '+proj=longlat +datum=WGS84 +no_defs')))$gbif
 #  
 #    rows <- grep("EBIRD", raw_data$data[[paste0('Setophaga_', bird)]]$collectionCode)
 #  
@@ -81,7 +86,8 @@ library(PointedSDMs)
 #    data_sp <- st_as_sf(
 #      x = raw_data[, names(raw_data) %in% c("longitude", "latitude", 'Species_name')],
 #      coords = c('longitude', 'latitude'),
-#      crs = proj)
+#      crs = '+proj=longlat +datum=WGS84 +no_defs')
+#    data_sp <- st_transform(data_sp, proj)
 #  
 #    dataSets[[paste0('eBird_', bird)]] <- data_sp[unlist(st_intersects(PA, data_sp)),]
 #  
@@ -100,15 +106,16 @@ library(PointedSDMs)
 #  covariates <- scale(terra::rast(system.file('extdata/SetophagaCovariates.tif',
 #                                        package = "PointedSDMs")))
 #  names(covariates) <- c('elevation', 'canopy')
-#  crs(covariates) <- proj
+#  
+#  plot(covariates)
 #  
 
 ## ----Mesh, warning = FALSE, message = FALSE, fig.width=8, fig.height=5--------
 #  
 #  mesh <- inla.mesh.2d(boundary = inla.sp2segment(PA),
-#                       cutoff = 0.2,
-#                       max.edge = c(0.1, 0.24),
-#                       offset = c(0.1, 0.4),
+#                       cutoff = 0.2 * 5,
+#                       max.edge = c(0.1, 0.24) * 40, #120
+#                       offset = c(0.1, 0.4) * 100,
 #                       crs = st_crs(proj))
 #  
 #  mesh_plot <- ggplot() +
@@ -119,66 +126,155 @@ library(PointedSDMs)
 #  mesh_plot
 #  
 
+## ----modelOptions-------------------------------------------------------------
+#  
+#  modelOptions <- list(control.inla =
+#                         list(int.strategy = 'eb',
+#                              diagonal = 0.1),
+#                              verbose = TRUE,
+#                              safe = TRUE)
+#  
+
 ## ----Model prep, warning = FALSE, message = FALSE-----------------------------
 #  
-#  spatial_data <- intModel(dataSets,
-#                          Coordinates = c('X', 'Y'),
-#                          Projection = proj, Mesh = mesh,
-#                          responsePA = 'NPres', responseCounts = 'Counts',
-#                          spatialCovariates = covariates, speciesName = 'Species_name')
+#  caerulescensData <- dataSets[c(1,4,5)]
+#  
+#  caerulescensModel <- startISDM(caerulescensData, Boundary = PA,
+#                            Projection = proj, Mesh = mesh,
+#                            responsePA = 'NPres', responseCounts = 'Counts',
+#                            spatialCovariates = covariates,
+#                            Formulas =
+#                            list(
+#            covariateFormula = ~ elevation + I(elevation^2) + canopy + I(canopy^2))
+#                               )
+#  
+
+## ----help, eval = FALSE-------------------------------------------------------
+#  
+#  caerulescensModel$help()
 #  
 
 ## ----dataset plot, fig.width=8, fig.height=5----------------------------------
 #  
-#  spatial_data$plot(Boundary = FALSE) +
-#    geom_sf(data = PA, fill = 'black', alpha = 0.15, lwd = 1.2) +
+#  caerulescensModel$plot() +
 #    theme_bw() +
 #    ggtitle('Plot of the datasets') +
 #    theme(plot.title = element_text(hjust = 0.5))
 #  
 
-## ----species plot, fig.width=8, fig.height=5----------------------------------
-#  
-#  spatial_data$plot(Species = TRUE, Boundary = FALSE) +
-#    geom_sf(data = PA, fill = 'black', alpha = 0.15, lwd = 1.2) +
-#    theme_bw() +
-#    ggtitle('Plot of the species') +
-#    theme(plot.title = element_text(hjust = 0.5))
-#  
-
 ## ----specifySpatial-----------------------------------------------------------
 #  
-#  spatial_data$specifySpatial(sharedSpatial = TRUE,
-#                              prior.sigma = c(5, 0.01),
-#                              prior.range = c(1, 0.01))
+#  caerulescensModel$specifySpatial(sharedSpatial = TRUE,
+#                                   prior.sigma = c(1, 0.1),
+#                                   prior.range = c(15, 0.1))
 #  
 
 ## ----bias fields, eval = FALSE------------------------------------------------
 #  
-#  spatial_data$addBias('eBird_caerulescens')
-#  spatial_data$addBias('eBird_fusca')
-#  spatial_data$addBias('eBird_magnolia')
+#  caerulescensModel$addBias(datasetNames = 'eBird_caerulescens')
+#  
+#  caerulescensModel$specifySpatial(Bias = TRUE,
+#                                   prior.sigma = c(1, 0.1),
+#                                   prior.range = c(15, 0.1))
 #  
 
 ## ----priorsFixed--------------------------------------------------------------
 #  
-#  spatial_data$priorsFixed(Effect = 'elevation', Species = 'fusca',
-#                           mean.linear = 2, prec.linear = 0.05)
+#  caerulescensModel$priorsFixed(Effect = 'Intercept',
+#                                mean.linear = 0,
+#                                prec.linear = 0.1)
 #  
 
 ## ----changeComponents---------------------------------------------------------
 #  
-#  spatial_data$changeComponents()
+#  caerulescensModel$changeComponents()
+#  
+
+## ----specifyRandom------------------------------------------------------------
+#  
+#  caerulescensModel$specifyRandom(copyModel = list(beta = list(fixed = TRUE)))
+#  
+#  caerulescensModel$changeComponents()
+#  
+
+## ----fitISDM run--------------------------------------------------------------
+#  
+#  caerulescensEst <- fitISDM(data = caerulescensModel,
+#                     options = modelOptions)
+#  
+
+## ----predict and plot---------------------------------------------------------
+#  
+#  caerulescensPredictions <- predict(caerulescensEst,
+#                                     data = fm_pixels(mesh = mesh,
+#                                                      mask = PA),
+#                                     spatial = TRUE,
+#                                     n.samples = 1000)
+#  
+#  plot(caerulescensPredictions, variable = c('mean', 'sd'))
+#  
+#  
+
+## ----startSpeciesStart--------------------------------------------------------
+#  
+#  speciesModel <- startSpecies(dataSets, Boundary = PA, pointsSpatial = NULL,
+#                               Projection = proj, Mesh = mesh,
+#                               responsePA = 'NPres', responseCounts = 'Counts',
+#                               spatialCovariates = covariates,
+#                               speciesName = 'Species_name')
+#  
+
+## ----species help, eval = FALSE-----------------------------------------------
+#  
+#  speciesModel$help()
+#  
+
+## ----specifySpecies-----------------------------------------------------------
+#  
+#  speciesModel$specifySpatial(Species  = TRUE,
+#                              prior.sigma = c(1, 0.1),
+#                              prior.range = c(15, 0.1))
+#  
+#  speciesModel$priorsFixed(Effect = 'Intercept',
+#                           mean.linear = 0,
+#                           prec.linear = 0.1)
+#  
+#  speciesModel$specifyRandom(speciesGroup = list(model = "iid",
+#                                                 hyper = list(prec = list(prior = "pc.prec",
+#                                                 param = c(0.1, 0.1)))),
+#                             speciesIntercepts = list(prior = 'pc.prec',
+#                                                      param = c(0.1, 0.1)))
+#  
+#  
+
+## ----fitSpecies---------------------------------------------------------------
+#  
+#  speciesEst <- fitISDM(data = speciesModel,
+#                        options = modelOptions)
+#  
+#  summary(speciesEst)
+#  
+
+## ----predictionsSpecies-------------------------------------------------------
+#  
+#  speciesPredictions <- predict(speciesEst,
+#                                     data = fm_pixels(mesh = mesh,
+#                                                      mask = PA),
+#                                     spatial = TRUE,
+#                                     n.samples = 1000)
+#  
+#  plot(speciesPredictions)
 #  
 
 ## ----spatialBlock, warning = FALSE, message = FALSE,  fig.width=8, fig.height=5----
 #  
-#  spatial_data$spatialBlock(k = 4, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
+#  caerulescensModel$spatialBlock(k = 2, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
 #  
 
 ## ----blockedCV, warning = FALSE, eval = FALSE---------------------------------
 #  
-#  spatialBlocked <- blockedCV(data = spatial_data, options = list(control.inla = list(int.strategy = 'eb')))
+#  spatialBlocked <- blockedCV(data = caerulescensModel,
+#                              options = modelOptions)
 #  
 
 ## ----print spatialBlocked-----------------------------------------------------
@@ -188,30 +284,24 @@ library(PointedSDMs)
 
 ## ----No fields model, message = FALSE, warning = FALSE------------------------
 #  
-#  no_fields <- intModel(dataSets,
-#                        Coordinates = c('X', 'Y'),
+#  no_fields <- startISDM(dataSets,
 #                        pointsSpatial = NULL,
 #                        Projection = proj, Mesh = mesh,
 #                        responsePA = 'NPres', responseCounts = 'Counts',
-#                        spatialCovariates = covariates, speciesName = 'Species_name')
+#                        spatialCovariates = covariates)
 #  
-#  no_fields$spatialBlock(k = 4, rows = 2, cols = 2)
+#  no_fields$spatialBlock(k = 2, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
 #  
 
 ## ----spatialBlocked_no_fields, eval = FALSE-----------------------------------
 #  
-#  spatialBlocked_no_fields <- blockedCV(data = no_fields, options = list(control.inla = list(int.strategy = 'eb')))
+#  spatialBlocked_no_fields <- blockedCV(data = no_fields,
+#                                        options = modelOptions)
 #  
 
 ## ----print spatialBlocked_no_fields-------------------------------------------
 #  
 #  spatialBlocked_no_fields
-#  
-
-## ----Running model, message=FALSE, warning=FALSE, eval = FALSE----------------
-#  
-#  joint_model <- fitISDM(data = spatial_data,
-#                         options = list(control.inla = list(int.strategy = 'eb')))
 #  
 
 ## ----Summary of model, message = FALSE, warning = FALSE, echo = TRUE,fig.width=7, fig.height=5----
@@ -245,23 +335,10 @@ library(PointedSDMs)
 
 ## ----Leave one out, message = FALSE, warning = FALSE, eval = FALSE------------
 #  
-#  dataset_out <- datasetOut(model = joint_model,
+#  dataset_out <- datasetOut(model = caerulescensEst,
 #                            dataset = "BBA",
 #                            predictions = TRUE)
 #  
 #  dataset_out
-#  
-
-## ----Projections, message = FALSE, warning = FALSE, eval = FALSE--------------
-#  
-#  projections <- predict(joint_model, mesh = mesh, mask = PA,
-#                         spatial = TRUE,
-#                         fun = 'linear', n.samples = 1000)
-#  
-
-## ----Plots, fig.width=8, fig.height=5, message = FALSE, warning = FALSE-------
-#  
-#  plot(projections, whattoplot = 'mean',
-#       colourLow = 'orange', colourHigh = 'dark red')
 #  
 

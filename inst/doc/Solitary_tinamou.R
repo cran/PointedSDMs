@@ -53,7 +53,7 @@ knitr::opts_chunk$set(
 
 ## ----set up base model, warning = FALSE, message = FALSE----------------------
 #  
-#  base <- intModel(datasets, spatialCovariates = covariates, Coordinates = c('X', 'Y'),
+#  base <- startISDM(datasets, spatialCovariates = covariates,
 #                   Projection = projection, responsePA = 'Present', Offset = 'area',
 #                   Mesh = mesh, pointsSpatial = NULL)
 #  
@@ -73,12 +73,12 @@ knitr::opts_chunk$set(
 ## ----run base model, warning = FALSE, message = FALSE-------------------------
 #  
 #  baseModel <- fitISDM(data = base)
-#  baseModel
+#  summary(baseModel)
 #  
 
 ## ----set up model with fields, warning = FALSE, message = FALSE---------------
 #  
-#  fields <- intModel(datasets, Coordinates = c('X', 'Y'),
+#  fields <- startISDM(datasets, spatialCovariates = covariates,
 #                     Projection = projection, Mesh = mesh, responsePA = 'Present',
 #                     pointsIntercept = FALSE)
 #  
@@ -96,26 +96,31 @@ knitr::opts_chunk$set(
 
 ## ----run fields model, warning = FALSE, message = FALSE-----------------------
 #  
-#  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb')))
-#  fieldsModel
+#  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb',
+#                                                                    diagonal = 0.05)))
+#  summary(fieldsModel)
 #  
 
-## ----copy model---------------------------------------------------------------
+## ----correlate model----------------------------------------------------------
 #  
-#  copy <- intModel(datasets, Coordinates = c('X', 'Y'),
-#                   Projection = projection, Mesh = mesh, responsePA = 'Present',
-#                   pointsSpatial = 'copy')
+#  correlate <- startISDM(datasets,
+#                   Projection = projection, Mesh = mesh,
+#                   responsePA = 'Present',
+#                   pointsSpatial = 'correlate')
 #  
-#  copy$specifySpatial(sharedSpatial = TRUE, prior.range = c(20,0.01),
+#  correlate$specifySpatial(sharedSpatial = TRUE, prior.range = c(50,0.01),
 #                        prior.sigma = c(0.1, 0.01))
 #  
-#  copy$changeComponents()
+#  correlate$changeComponents()
 #  
 
-## ----run copy model-----------------------------------------------------------
+## ----run correlate model------------------------------------------------------
 #  
-#  copyModel <- fitISDM(copy, options = list(control.inla = list(int.strategy = 'eb')))
-#  copyModel
+#  correlateModel <- fitISDM(correlate,
+#                            options = list(control.inla =
+#                                             list(int.strategy = 'eb',
+#                                                  diagonal = 0.1)))
+#  summary(correlateModel)
 #  
 
 ## ----predict spatial, warning = FALSE, message = FALSE------------------------
@@ -128,7 +133,7 @@ knitr::opts_chunk$set(
 
 ## ----spatial, fig.width=8, fig.height=5---------------------------------------
 #  
-#  plot(spatial_predictions)
+#  plot(spatial_predictions, variable = c('mean', 'sd'))
 #  
 
 ## ----predict bias, warning = FALSE, message = FALSE---------------------------
@@ -136,7 +141,7 @@ knitr::opts_chunk$set(
 #  bias_predictions <- predict(fieldsModel,
 #                      mesh = mesh,
 #                      mask = region,
-#                      biasfield = TRUE,
+#                      bias = TRUE,
 #                      fun = 'linear')
 #  
 

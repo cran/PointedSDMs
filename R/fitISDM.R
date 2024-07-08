@@ -41,7 +41,8 @@
 
 fitISDM <- function(data, options = list()) {
   
-  if (!inherits(data, 'dataSDM')) stop('data needs to be a dataSDM object.')
+  if (!inherits(data, 'dataSDM') && !inherits(data, 'specifySpecies') && !inherits(data, 'specifyISDM') &&
+      !inherits(data, 'specifyMarks')) stop('data needs to be either a specifySpecies, specifyISDM or specifyMarks object.')
   
   if (is.null(data$.__enclos_env__$private$INLAmesh)) stop('An inla.mesh object is required before any model is run.')
   
@@ -76,18 +77,6 @@ fitISDM <- function(data, options = list()) {
   }))
   )
   
-  comp_terms <- gsub('\\(.*$', '', data$.__enclos_env__$private$Components)
-  
-  #Will need to change this to say comp_terms %in% c(formula_terms, bias_terms)
-  comp_keep <- comp_terms %in% c(formula_terms, 
-                                 paste0(data$.__enclos_env__$private$dataSource, '_samplers_field'),
-                                 paste0(data$.__enclos_env__$private$dataSource, 'samplers'))
-  
-  componentsJoint <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
-  
-  ##in case there are duplicates, will it cause an error??
-  componentsJoint <- formula(paste(paste('~ - 1 +', paste(labels(terms(componentsJoint)), collapse = ' + '))))
-  
   if (!is.null(data$.__enclos_env__$private$temporalName)) {
     
     numTime <- length(unique(unlist(data$.__enclos_env__$private$temporalVars)))
@@ -103,6 +92,19 @@ fitISDM <- function(data, options = list()) {
     data$.__enclos_env__$private$IPS <- newIPS
     
   }
+  
+  comp_terms <- gsub('\\(.*$', '', data$.__enclos_env__$private$Components)
+  
+  #Will need to change this to say comp_terms %in% c(formula_terms, bias_terms)
+  comp_keep <- comp_terms %in% c(formula_terms, 
+                                 paste0(data$.__enclos_env__$private$dataSource, '_samplers_field'),
+                                 paste0(data$.__enclos_env__$private$dataSource, 'samplers'))
+  
+  componentsJoint <- formula(paste('~ - 1 +', paste(data$.__enclos_env__$private$Components[comp_keep], collapse = ' + ')))
+  
+  ##in case there are duplicates, will it cause an error??
+  componentsJoint <- formula(paste(paste('~ - 1 +', paste(labels(terms(componentsJoint)), collapse = ' + '))))
+  
   
   allLiks <- do.call(inlabru::like_list,
                      makeLhoods(data = data$.__enclos_env__$private$modelData,
@@ -159,31 +161,43 @@ fitISDM <- function(data, options = list()) {
     
   }
   
+  if (is.null(data$.__enclos_env__$private$speciesIntercepts)) data$.__enclos_env__$private$speciesIntercepts <- FALSE
   if (data$.__enclos_env__$private$speciesIntercepts) row.names(inlaModel$summary.random[[paste0(data$.__enclos_env__$private$speciesName, '_intercepts')]]) <- data$.__enclos_env__$private$speciesTable[['species']]
+  
   
   inlaModel[['componentsJoint']] <- componentsJoint
   inlaModel[['optionsJoint']] <- optionsJoint
   inlaModel[['source']] <- as.vector(unlist(data$.__enclos_env__$private$dataSource))
   inlaModel[['spatCovs']] <- list(name = data$.__enclos_env__$private$spatcovsNames,
                                   class = data$.__enclos_env__$private$ptcovsClass,
-                                  env = data$.__enclos_env__$private$spatcovsEnv)
+                                  env = data$.__enclos_env__$private$spatcovsEnv,
+                                  covariateFormula = data$.__enclos_env__$private$covariateFormula,
+                                  biasFormula = data$.__enclos_env__$private$biasFormula)
   inlaModel[['species']] <- list(speciesIn = data$.__enclos_env__$private$speciesIn,
                                  speciesVar = data$.__enclos_env__$private$speciesName,
                                  speciesEffects = list(Intercepts = data$.__enclos_env__$private$speciesIntercepts,
-                                                       Environmental = data$.__enclos_env__$private$speciesEnvironment))
+                                                       Environmental = data$.__enclos_env__$private$speciesEnvironment),
+                                 speciesTable = data$.__enclos_env__$private$speciesTable)
   inlaModel[['dataType']] <- c(na.omit(data$.__enclos_env__$private$printSummary$Type),
                                na.omit(unlist(unname(data$.__enclos_env__$private$printSummary$marksType))))
   inlaModel[['marks']] <- list(marksIn = data$.__enclos_env__$private$printSummary$Marks,
                                multinomVars = data$.__enclos_env__$private$multinomVars)
-  inlaModel[['biasData']] <- names(data$spatialFields$biasField)
+  inlaModel[['biasData']] <- list(Fields = names(data$spatialFields$biasField), Comps = data$.__enclos_env__$private$biasFormula,
+                                  Copy = data$.__enclos_env__$private$biasCopy)
   inlaModel[['spatial']] <- list(points = pointsSpatial,
                                  species = speciesSpatial,
                                  marks = marksSpatial)
   inlaModel[['temporal']] <- list(temporalIn = data$.__enclos_env__$private$temporalVars, # I think ... do we need all these vars??? Can we just use unique unlist( ... )
                                   temporalVar = data$.__enclos_env__$private$temporalName)
   
+  #Do a switch here to assign the correct class
   
-  class(inlaModel) <- c('bruSDM', class(inlaModel))
+  
+  class(inlaModel) <- switch(class(data)[1],
+                             specifyISDM = c('modISDM', class(inlaModel)),
+                             specifySpecies = c('modSpecies', class(inlaModel)),
+                             specifyMarks = c('modMarks', class(inlaModel)),
+                             dataSDM = c('bruSDM', class(inlaModel)))
   
   inlaModel
   

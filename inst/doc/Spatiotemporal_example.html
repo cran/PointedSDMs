@@ -12,7 +12,7 @@
 
 <meta name="author" content="Philip Mostert" />
 
-<meta name="date" content="2024-02-02" />
+<meta name="date" content="2024-07-08" />
 
 <title>Spatiotemporal example</title>
 
@@ -51,7 +51,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Spatiotemporal example</h1>
 <h4 class="author">Philip Mostert</h4>
-<h4 class="date">2024-02-02</h4>
+<h4 class="date">2024-07-08</h4>
 
 
 
@@ -361,16 +361,16 @@ vignette is to load the required packages:</p>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code></pre></div>
 <p>as well as define some objects required by the model to run.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>proj <span class="ot">&lt;-</span> <span class="st">&quot;+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>proj <span class="ot">&lt;-</span> <span class="st">&quot;+proj=utm +zone=17 +datum=WGS84 +units=km&quot;</span><span class="co">#&quot;+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0&quot;</span></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>AL <span class="ot">&lt;-</span> USAboundaries<span class="sc">::</span><span class="fu">us_states</span>(<span class="at">states =</span> <span class="st">&quot;Alabama&quot;</span>, <span class="at">resolution =</span> <span class="st">&#39;high&#39;</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>AL <span class="ot">&lt;-</span> <span class="fu">as</span>(AL, <span class="st">&quot;sf&quot;</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">st_crs</span>(AL) <span class="ot">&lt;-</span> proj</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>AL <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(AL, proj)</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>mesh <span class="ot">&lt;-</span> <span class="fu">inla.mesh.2d</span>(<span class="at">boundary =</span> <span class="fu">inla.sp2segment</span>(AL[<span class="dv">1</span>]), </span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                     <span class="at">cutoff =</span> <span class="fl">0.1</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>                     <span class="at">max.edge =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>), </span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>                     <span class="at">offset =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                     <span class="at">cutoff =</span> <span class="fl">0.1</span> <span class="sc">*</span> <span class="dv">50</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>                     <span class="at">max.edge =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>) <span class="sc">*</span> <span class="dv">70</span>, </span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>                     <span class="at">offset =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>) <span class="sc">*</span> <span class="dv">150</span>,</span>
 <span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>                     <span class="at">crs =</span> <span class="fu">st_crs</span>(proj))</span></code></pre></div>
 <p>The first dataset we consider is obtained from the North American
 Breeding Bird Survey. This dataset may be loaded directly from the
@@ -389,53 +389,63 @@ per year is equal.</p>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">query =</span> <span class="st">&#39;Colinus virginianus&#39;</span>,</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">from =</span> <span class="st">&#39;gbif&#39;</span>,</span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2015-01-01&quot;</span>, <span class="st">&quot;2015-12-31&quot;</span>),</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">geometry =</span> AL</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>eBird2016 <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="at">query =</span> <span class="st">&#39;Colinus virginianus&#39;</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">from =</span> <span class="st">&#39;gbif&#39;</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2016-01-01&quot;</span>, <span class="st">&quot;2016-12-31&quot;</span>),</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">geometry =</span> AL</span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>eBird2017 <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>  <span class="at">query =</span> <span class="st">&#39;Colinus virginianus&#39;</span>,</span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  <span class="at">from =</span> <span class="st">&#39;gbif&#39;</span>,</span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2017-01-01&quot;</span>, <span class="st">&quot;2017-12-31&quot;</span>),</span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="at">geometry =</span> AL</span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(eBird2015<span class="sc">$</span>data[[<span class="dv">1</span>]]) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(eBird2016<span class="sc">$</span>data[[<span class="dv">1</span>]])) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(eBird2017<span class="sc">$</span>data[[<span class="dv">1</span>]]))</span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(<span class="at">x =</span> eBird,</span>
-<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>                  <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">&#39;longitude&#39;</span>, <span class="st">&#39;latitude&#39;</span>),</span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>                  <span class="at">crs =</span> proj)</span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>eBird<span class="sc">$</span>Year <span class="ot">&lt;-</span> eBird<span class="sc">$</span>year</span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> eBird[<span class="fu">unlist</span>(<span class="fu">st_intersects</span>(AL, eBird)),]</span></code></pre></div>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>   <span class="at">geometry =</span> <span class="fu">st_bbox</span>(<span class="fu">st_transform</span>(AL,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                <span class="st">&#39;+proj=longlat +datum=WGS84 +no_defs&#39;</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>eBird2016 <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">query =</span> <span class="st">&#39;Colinus virginianus&#39;</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">from =</span> <span class="st">&#39;gbif&#39;</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2016-01-01&quot;</span>, <span class="st">&quot;2016-12-31&quot;</span>),</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a> <span class="at">geometry =</span> <span class="fu">st_bbox</span>(<span class="fu">st_transform</span>(AL,</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>                <span class="st">&#39;+proj=longlat +datum=WGS84 +no_defs&#39;</span>))</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>eBird2017 <span class="ot">&lt;-</span> spocc<span class="sc">::</span><span class="fu">occ</span>(</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  <span class="at">query =</span> <span class="st">&#39;Colinus virginianus&#39;</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="at">from =</span> <span class="st">&#39;gbif&#39;</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="at">date =</span> <span class="fu">c</span>(<span class="st">&quot;2017-01-01&quot;</span>, <span class="st">&quot;2017-12-31&quot;</span>),</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a> <span class="at">geometry =</span> <span class="fu">st_bbox</span>(<span class="fu">st_transform</span>(AL,</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>                <span class="st">&#39;+proj=longlat +datum=WGS84 +no_defs&#39;</span>))</span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>)<span class="sc">$</span>gbif</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(eBird2015<span class="sc">$</span>data[[<span class="dv">1</span>]]) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(eBird2016<span class="sc">$</span>data[[<span class="dv">1</span>]])) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(eBird2017<span class="sc">$</span>data[[<span class="dv">1</span>]]))</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(<span class="at">x =</span> eBird,</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>                  <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">&#39;longitude&#39;</span>, <span class="st">&#39;latitude&#39;</span>),</span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>                  <span class="at">crs =</span>  <span class="st">&#39;+proj=longlat +datum=WGS84 +no_defs&#39;</span>)</span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a>eBird<span class="sc">$</span>Year <span class="ot">&lt;-</span> eBird<span class="sc">$</span>year</span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(eBird, proj)</span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a>eBird <span class="ot">&lt;-</span> eBird[<span class="fu">unlist</span>(<span class="fu">st_intersects</span>(AL, eBird)),]</span></code></pre></div>
 <p>We then get onto the model description, which in this case includes a
 shared spatial field between the two datasets. This shared spatial field
 is characterized by an <em>ar1</em> process. To add this structure into
 the model, we specify the parameter <em>temporalModel</em> in the
-function <code>intModel</code> appropriately, Furthermore we specified
-the hyper parameters for both the random field and the temporal
-effect.</p>
+function <code>startISDM</code> appropriately, Furthermore we specified
+the hyper parameters for both the random field and the temporal effect
+and the priors for the intercepts.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>hyperParams <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">rho =</span> <span class="fu">list</span>(<span class="at">prior =</span> <span class="st">&quot;pc.prec&quot;</span>, <span class="at">param =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>)))</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>modelSetup <span class="ot">&lt;-</span> <span class="fu">intModel</span>(eBird, BBSColinusVirginianus,</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                       <span class="at">Coordinates =</span> <span class="fu">c</span>(<span class="st">&#39;Longitude&#39;</span>, <span class="st">&#39;Latitude&#39;</span>),                                                    <span class="at">temporalName =</span> <span class="st">&#39;Year&#39;</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                       <span class="at">Projection =</span>  proj, <span class="at">Mesh =</span> mesh, </span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>                       <span class="at">responsePA =</span>  <span class="st">&#39;NPres&#39;</span>, <span class="at">trialsPA =</span> <span class="st">&#39;Ntrials&#39;</span>,</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                       <span class="at">temporalModel =</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">&#39;ar1&#39;</span>, <span class="at">hyper =</span> hyperParams))</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>, <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.01</span>), </span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>                          <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.01</span>))</span></code></pre></div>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>hyperParams <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">model =</span> <span class="st">&#39;ar1&#39;</span>, </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                    <span class="at">hyper =</span> <span class="fu">list</span>(<span class="at">rho =</span> <span class="fu">list</span>(<span class="at">prior =</span> <span class="st">&quot;pc.prec&quot;</span>, <span class="at">param =</span> <span class="fu">c</span>(<span class="fl">0.9</span>, <span class="fl">0.1</span>))))</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>modelSetup <span class="ot">&lt;-</span> <span class="fu">startISDM</span>(eBird, BBSColinusVirginianus,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                       <span class="at">temporalName =</span> <span class="st">&#39;Year&#39;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>                       <span class="at">Boundary =</span> AL,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                       <span class="at">Projection =</span>  proj, <span class="at">Mesh =</span> mesh, </span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>                       <span class="at">responsePA =</span>  <span class="st">&#39;NPres&#39;</span>, <span class="at">trialsPA =</span> <span class="st">&#39;Ntrials&#39;</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">specifySpatial</span>(<span class="at">sharedSpatial =</span> <span class="cn">TRUE</span>, <span class="at">prior.sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>), </span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>                          <span class="at">prior.range =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="fl">0.5</span>))</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">specifyRandom</span>(<span class="at">temporalModel =</span> hyperParams)</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">priorsFixed</span>(<span class="at">Effect =</span> <span class="st">&#39;intercept&#39;</span>, <span class="at">mean.linear =</span> <span class="dv">0</span>, <span class="at">prec.linear =</span> <span class="fl">0.001</span>)</span></code></pre></div>
 <p>The data is spread across the map like this</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>modelSetup<span class="sc">$</span><span class="fu">plot</span>()</span></code></pre></div>
@@ -448,8 +458,9 @@ vignette. However, both the data and script is provided for the user to
 complete the analysis.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">fitISDM</span>(modelSetup,</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>)))</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a> </span></code></pre></div>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                <span class="at">options =</span> <span class="fu">list</span>(<span class="at">control.inla =</span> <span class="fu">list</span>(<span class="at">int.strategy =</span> <span class="st">&#39;eb&#39;</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>                                                   <span class="at">diagonal =</span> <span class="dv">1</span>)))</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a> </span></code></pre></div>
 <p>And finally create predictions for the three time periods, and plot
 them.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a></span>

@@ -1,36 +1,36 @@
 #' @title \emph{intModel}: Function used to initialize the integrated species distribution model.
 #' 
-#' @description This function is used to create an object containing all the data, metadata and relevant components required for the integrated species distribution model and \pkg{INLA} to work.
-#' As a result, the arguments associated with this function are predominantly related to describing variable names within the datasets that are relevant, and arguments related to what terms should be included in the formula for the integrated model. The output of this function is an \code{R6} object, and so there are a variety of public methods within the output of this function which can be used to further specify the model (see \code{?dataSDM} for a comprehensive description of these public methods).
+#' @description This function is depreciated. Please use one of \code{\link{startISDM}} or \code{\link{startSpecies}}.
 #' 
 #' @param ... The datasets to be used in the model. May come as either \code{sf}, \code{data.frame} or \code{SpatialPoints*} objects, or as a list of objects with these classes. The classes of the datasets do not necessarily need to be standardized, however the variable names within them often have to be.
 #' @param spatialCovariates The spatial covariates used in the model. These covariates must be measured at every location (pixel) in the study area, and must be a \code{Raster*}, \code{SpatialPixelsDataFrame} or \code{SpatialRaster} object. Can be either \code{numeric}, \code{factor} or \code{character} data.
 #' @param Coordinates A vector of length 2 containing the names (class \code{character}) of the coordinate variables used in the model.
 #' @param Projection The coordinate reference system used by both the spatial points and spatial covariates. Must be of class \code{character}.
 #' @param Mesh An \code{inla.mesh} object required for the spatial random fields and the integration points in the model (see \code{\link[INLA]{inla.mesh.2d}} from the \pkg{INLA} package for more details). 
-#' @param IPS The integration points to be used in the model (that is, the points on the map where the intensity of the model is calculated). See \code{\link[inlabru]{ipoints}} from the \pkg{inlabru} package for more details regarding these points; however defaults to \code{NULL} which will create integration points from the \code{Mesh} object.
+#' @param IPS The integration points to be used in the model (that is, the points on the map where the intensity of the model is calculated). See \code{\link[inlabru]{fm_int}} from the \pkg{inlabru} package for more details regarding these points; however defaults to \code{NULL} which will create integration points from the \code{Mesh} object.
 #' @param Boundary A \code{sf} object of the study area. If not missing, this object is used to help create the integration points.
-#' @param speciesSpatial Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated, of if a the field's should be estimated using \pkg{INLA}'s "copy" feature. Possible values include: \code{'individual'}, \code{'copy'}, \code{'shared'} or \code{NULL} if no species-specific spatial effects should be estimated.
+#' @param speciesSpatial Argument to specify if each species should have their own spatial effect with different hyperparameters to be estimated using \pkg{INLA}'s "replicate" feature, of if a the field's should be estimated per species copied across datasets using \pkg{INLA}'s "copy" feature. Possible values include: \code{'replicate'}, \code{'copy'}, \code{'shared'} or \code{NULL} if no species-specific spatial effects should be estimated.
 #' @param speciesIndependent Logical argument: Should species effects be made independent of one another. Defaults to \code{FALSE} which creates effects for each species independently.
 #' @param markNames A vector with the mark names (class \code{character}) to be included in the integrated model. Marks are variables which are used to describe the individual points in the model (for example, in the field of ecology the size of the species or its feeding type could be considered). Defaults to \code{NULL}, however if this argument is non-\code{NULL}, the model run will become a marked point process. The marks must be included in the same data object as the points.
 #' @param markFamily A vector with the statistical families (class \code{character}) assumed for the marks. Must be the same length as markNames, and the position of the mark in the vector \code{markName} is associated with the position of the family in \code{markFamily}. Defaults to \code{NULL} which assigns each mark as "Gaussian".
 #' @param pointCovariates The non-spatial covariates to be included in the integrated model (for example, in the field of ecology the distance to the nearest road or time spent sampling could be considered). These covariates must be included in the same data object as the points.
 #' @param Offset Name of the offset variable (class \code{character}) in the datasets. Defaults to \code{NULL}; if the argument is non-\code{NULL}, the variable name needs to be standardized across datasets (but does not need to be included in all datasets). The offset variable will be transformed onto the log-scale in the integrated model.
-#' @param pointsIntercept Logical argument: should the points be modeled with intercepts. Defaults to \code{TRUE}.
+#' @param pointsIntercept Logical argument: should the points be modeled with intercepts. Defaults to \code{TRUE}.  Note that if this argument is non-\code{NULL} and \code{pointsIntercepts} is missing, \code{pointsIntercepts} will be set to \code{FALSE}.
 #' @param marksIntercept Logical argument: should the marks be modeled with intercepts. Defaults to \code{TRUE}.
 #' @param speciesEffects List specifying if intercept terms and environments effects should be made for the species. Defaults to \code{list(randomIntercept = FALSE, Environmental = TRUE)}. \code{randomIntercept} may take on three values: \code{TRUE} which creates a random intercept for each species, \code{FALSE} which creates fixed intercepts for each species, of \code{NULL} which removes all species level intercepts. Note that if \code{randomIntercept = NULL} and \code{pointsIntercept = TRUE}, dataset specific intercept terms will be created.
-#' @param pointsSpatial Argument to determine whether the spatial field is shared between the datasets, or if each dataset has its own unique spatial field. The datasets may share a spatial field with \pkg{INLA}'s "copy" feature if the argument is set to \code{copy}. May take on the values: \code{"shared"}, \code{"individual"}, \code{"copy"} or \code{NULL} if no spatial field is required for the model. Defaults to \code{"shared"}.
+#' @param pointsSpatial Argument to determine whether the spatial field is shared between the datasets, or if each dataset has its own unique spatial field. The datasets may share a spatial field with \pkg{INLA}'s "copy" feature if the argument is set to \code{copy}. May take on the values: \code{"shared"}, \code{"individual"}, \code{"copy"}, \code{"correlation"} or \code{NULL} if no spatial field is required for the model. Defaults to \code{"copy"}.
 #' @param marksSpatial Logical argument: should the marks have their own spatial field. Defaults to \code{TRUE}.
 #' @param responseCounts Name of the response variable in the counts/abundance datasets. This variable name needs to be standardized across all counts datasets used in the integrated model. Defaults to \code{'counts'}.
 #' @param responsePA Name of the response variable (class \code{character}) in the presence absence/detection non-detection datasets. This variable name needs to be standardized across all present absence datasets. Defaults to \code{'present'}.
 #' @param trialsPA Name of the trials response variable (class \code{character}) for the presence absence datasets. Defaults to \code{NULL}.
 #' @param trialsMarks Name of the trials response variable (class \code{character}) for the binomial marks (if included). Defaults to \code{NULL}.
-#' @param speciesName Name of the species variable name (class \code{character}). Specifying this argument turns the model into a stacked species distribution model, and calculates covariate values for the individual species, as well as a species group model in the shared spatial field. Defaults to \code{NULL}
+#' @param speciesName Name of the species variable name (class \code{character}). Specifying this argument turns the model into a stacked species distribution model, and calculates covariate values for the individual species, as well as a species group model in the shared spatial field. Defaults to \code{NULL}. Note that if this argument is non-\code{NULL} and \code{pointsIntercepts} is missing, \code{pointsIntercepts} will be set to \code{FALSE}.
 #' @param temporalName Name of the temporal variable (class \code{character}) in the model. This variable is required to be in all the datasets. Defaults to \code{NULL}.
 #' @param temporalModel List of model specifications given to the control.group argument in the time effect component. Defaults to \code{list(model = 'ar1')}; see \code{\link[INLA]{control.group}} from the \pkg{INLA} package for more details.
 #' @param copyModel List of model specifications given to the hyper parameters for the  \code{"copy"} model. Defaults to \code{list(beta = list(fixed = FALSE))}.
+#' @param Formulas A named list with two objects. The first one, \code{covariateFormula}, is a formula for the covariates and their transformations for the distribution part of the model. Defaults to \code{NULL} which includes all covariates specified in \code{spatialCovariates} into the model. The second, \code{biasFormula}, specifies which covariates are used for the PO datasets. Defaults to \code{NULL} which includes no covariates for the PO datasets.
 #' 
-#' @return A \code{\link{dataSDM}} object (class \code{R6}). Use \code{?dataSDM} to get a comprehensive description of the slot functions associated with this object.
+#' @return A \code{\link{specifyISDM}} object (class \code{R6}). Use \code{?specifyISDM} to get a comprehensive description of the slot functions associated with this object.
 #' 
 #' @note The idea with this function is to describe the full model: that is, all the covariates and spatial effects will appear in all the formulas for the datasets and species.
 #' If some of these terms should not be included in certain observation models in the integrated model, they can be thinned out using the \code{.$updateFormula} function.
@@ -39,6 +39,8 @@
 #' @import methods
 #' 
 #' @examples 
+#' 
+#' \dontrun{
 #' 
 #'  if (requireNamespace('INLA')) {
 #'    
@@ -71,6 +73,7 @@
 #'                      responsePA = 'Present')
 #'                       
 #'  }
+#'  }
 #' 
 #' @export
 
@@ -82,39 +85,15 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
                      pointCovariates = NULL, 
                      pointsIntercept = TRUE, marksIntercept = TRUE, 
                      speciesEffects = list(randomIntercept = FALSE, Environmental = TRUE),
-                     Offset = NULL, pointsSpatial = 'shared', marksSpatial = TRUE,
+                     Offset = NULL, pointsSpatial = 'copy', marksSpatial = TRUE,
                      responseCounts = 'counts', responsePA = 'present', trialsPA = NULL,
                      trialsMarks = NULL, speciesName = NULL, temporalName = NULL,
                      temporalModel = list(model = 'ar1'), 
-                     copyModel = list(beta = list(fixed = FALSE))) {
+                     copyModel = list(beta = list(fixed = FALSE)),
+                     Formulas = list(covariateFormula = NULL,
+                                     biasFormula = NULL)) {
+  .Deprecated('startISDM', package = 'PointedSDMs', msg = 'This function has been depreciated for startISDM. If you wish to create a multi-species model, please use startSpecies.', old = 'intModel')
   
-  if (length(Coordinates) != 2) stop('Coordinates needs to be a vector of length 2 containing the coordinate names.')
-  
-  if (!is.null(Boundary) && !inherits(Boundary, 'sf')) stop('Boundary needs to be an sf object.')
-  
-  if (Coordinates[1] == Coordinates[2]) stop('Coordinates need to be unique values.')
-  
-  if (inherits(Projection, 'CRS') || inherits(Projection, 'crs')) Projection <- as(Projection, 'character')
-  else if (!inherits(Projection, 'character')) stop('Projection needs to be a character object.')
-  
-  if (!inherits(Mesh, 'inla.mesh')) stop('Mesh needs to be a inla.mesh object.')
-  
-  if (!is.null(pointsSpatial)) {
-    
-  if (length(pointsSpatial) != 1) stop('PointsSpatial needs to be one of: "shared", "copy", "individual" or NULL.')
-    
-  if (!pointsSpatial %in% c('shared', 'individual', 'copy')) stop('PointsSpatial needs to be one of: "shared", "copy", "individual" or NULL.')
-    
-  } 
-  #copy here?
-  if (pointsSpatial == 'copy' && !is.null(temporalName)) {
-    
-    pointsSpatial <- 'shared'
-    message('Setting pointsSpatial to "shared" since it is required for the temporalModel.')
-    
-  }
-  
-  #if (length(list(...)) > 0)  
   dataPoints <- list(...)
   
   #if (length(dataPoints) == 0) stop('Please provide data in the ... argument.')
@@ -125,7 +104,7 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
     if (length(datasetClass) == 1 && datasetClass == "list") {
       
       if (!is.null(names(dataPoints[[1]]))) {
-      
+        
         dataList <- TRUE
         dataNames <- names(dataPoints[[1]])
         dataPoints <- unlist(dataPoints, recursive = FALSE)
@@ -135,11 +114,11 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
       
       else {
         
-      dataNames <- NULL
-      dataPoints <- unlist(dataPoints, recursive = FALSE)
-      datasetClass <- lapply(dataPoints, class)
-      dataList <- TRUE
-      
+        dataNames <- NULL
+        dataPoints <- unlist(dataPoints, recursive = FALSE)
+        datasetClass <- lapply(dataPoints, class)
+        dataList <- TRUE
+        
       }
       
     }
@@ -152,6 +131,10 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
     
     if (!all(unlist(datasetClass) %in% c("SpatialPointsDataFrame", "SpatialPoints", "data.frame", 'sf',
                                          'tbl', 'tbl_df'))) stop("Datasets need to be either a SpatialPoints* object, sf or a data frame.")
+    
+    if (any(unlist(datasetClass) %in% c("SpatialPointsDataFrame", "SpatialPoints", "data.frame"))) {
+      
+    }
     
     if (dataList) {
       
@@ -187,64 +170,21 @@ intModel <- function(..., spatialCovariates = NULL, Coordinates,
     
   } else {
     
-   initialnames <- NULL
+    initialnames <- NULL
     
   }
+  names(dataPoints) <- initialnames
   
-  if (!is.null(temporalName)) temporalModel <- deparse1(temporalModel)
+  return(PointedSDMs::startISDM(dataPoints, spatialCovariates = spatialCovariates, 
+                                Projection = Projection, Mesh = Mesh, 
+                                IPS = IPS, Boundary = Boundary, pointCovariates = pointCovariates,
+                                Offset = Offset, pointsIntercept = pointsIntercept, pointsSpatial = pointsSpatial, 
+                                responseCounts = responseCounts, 
+                                responsePA = responsePA, 
+                                trialsPA = trialsPA, temporalName = temporalName,
+                                Formulas = list(covariateFormula = Formulas$covariateFormula,
+                                                biasFormula = Formulas$biasFormula)))
   
-  if (is.null(pointsSpatial) || pointsSpatial == 'shared') copyModel <- NULL
-  else copyModel <- deparse1(copyModel)
-  
-  if (!all(names(speciesEffects) %in% c('randomIntercept', 'Environmental'))) stop ('speciesEffects needs to be a named list with two items: randomIntercept and Environmental.')
-  
-  speciesIntercept <- speciesEffects$randomIntercept
-  speciesEnvironment <- speciesEffects$Environmental
-  
-  #if (!is.null(speciesName) && speciesIntercept) pointsIntercept <- FALSE
-  
-  bruData <- dataSDM$new(coordinates = Coordinates, projection = Projection,
-                         Inlamesh = Mesh, initialnames = initialnames,
-                         responsecounts = responseCounts,
-                         responsepa = responsePA,
-                         marksnames = markNames,
-                         marksfamily = markFamily,
-                         pointcovariates = pointCovariates,
-                         trialspa = trialsPA,
-                         trialsmarks = trialsMarks,
-                         spatial = pointsSpatial,
-                         marksspatial = marksSpatial,
-                         speciesname = speciesName,
-                         intercepts = pointsIntercept,
-                         marksintercepts = marksIntercept,
-                         spatialcovariates = spatialCovariates,
-                         boundary = Boundary,
-                         ips = IPS,
-                         speciesenvironment = speciesEnvironment,
-                         speciesintercept = speciesIntercept,
-                         temporal = temporalName,
-                         temporalmodel = temporalModel,
-                         speciesspatial = speciesSpatial,
-                         speciesindependent = speciesIndependent,
-                         offset = Offset,
-                         copymodel = copyModel)
-  
-  if (length(list(...)) == 0) warning('No point data added. You can add data to this object with `$.addData()`.')
-  
-  else {
-    
-    if (is.null(responseCounts) || is.null(responsePA)) stop('One of responseCounts and responsePA are NULL. Both are required arguments.')
-    
-    #if (!is.null(responsePA) && is.null(trialsPA)) warning('Present absence response name given but trials name is NULL.')
-    
-    bruData$addData(..., responseCounts = responseCounts,
-                    responsePA = responsePA, trialsPA = trialsPA,
-                    markNames = markNames, pointCovariates = pointCovariates,
-                    trialsMarks = trialsMarks, speciesName = speciesName,
-                    temporalName = temporalName, Offset = Offset)
-    
-  }
-  
-  bruData
+ 
   
 }
