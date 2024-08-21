@@ -40,8 +40,6 @@
 #' 
 #' @examples 
 #' 
-#' \dontrun{
-#' 
 #'  if (requireNamespace('INLA')) {
 #'    
 #'  #Get Data
@@ -72,7 +70,6 @@
 #'                      Projection = proj, markNames = 'area', markFamily = 'gamma',
 #'                      responsePA = 'Present')
 #'                       
-#'  }
 #'  }
 #' 
 #' @export

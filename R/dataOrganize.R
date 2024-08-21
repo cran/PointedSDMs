@@ -322,7 +322,7 @@ dataOrganize$set('public', 'makeFormulas', function(spatcovs, speciesname,
               ##Change this part ot the speciesIn: not sure what the one below does...
               if (!is.null(speciesspatial)) {
                 
-                if (speciesspatial == 'shared' || speciesspatial == 'replicate')speciesspat <- 'speciesShared'# speciesspat <- paste0(names(self$Data)[[dataset]],'_speciesShared')#
+                if (speciesspatial == 'shared' || speciesspatial == 'replicate') speciesspat <- 'speciesShared'
                 else {
                 
                   
@@ -633,12 +633,9 @@ dataOrganize$set('public', 'makeComponents', function(spatial, intercepts,
       else
         if (speciesspatial == 'replicate') {
           
-          #mainName <- datanames[[1]]
           speciesSpat <- 'speciesShared(main = geometry, model = speciesField, group = speciesSpatialGroup, control.group = list(model = "iid"))'
           
-          #speciesSpatMain <- paste0(mainName,'_speciesShared(main = geometry, model = speciesField, replicate = speciesSpatialGroup)')#, control.group = list(model = "iid"))')
-          #speciesSpatMCopy <- paste0(datanames[datanames != mainName],'_speciesShared(main = geometry, copy = \"',paste0(mainName, '_speciesShared'),'\", replicate = speciesSpatialGroup)')#, control.group = list(model = "iid"))')
-          #speciesSpat <- c(speciesSpatMain, speciesSpatMCopy)
+          
         } else {
       #speciesSpat <- paste0(species,'_spatial(main = coordinates, model = ',paste0(species,'_spdeModel'),')', collapse = ' + ')
  
