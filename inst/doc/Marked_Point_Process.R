@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 #  library(ggplot2)
 #  library(inlabru)
 #  library(INLA)
+#  library(fmesher)
 
 ## ----load_data----------------------------------------------------------------
 #  
@@ -24,7 +25,7 @@ knitr::opts_chunk$set(
 #  boundary <- Koala$boundary
 #  
 
-## ----clean_data, echo = FALSE,fig.width=7, fig.height=5-----------------------
+## ----clean_data, echo = TRUE,fig.width=7, fig.height=5------------------------
 #  
 #  proj <- "+init=epsg:27700"
 #  
@@ -40,10 +41,10 @@ knitr::opts_chunk$set(
 #  
 #  class(trees)
 #  
-#  mesh = inla.mesh.2d(boundary = boundary,
-#                      max.edge = c(10, 20),
-#                      offset = c(15,20),
-#                      cutoff = 2)
+#  mesh = fm_mesh_2d_inla(boundary = boundary,
+#                         max.edge = c(10, 20),
+#                         offset = c(15,20),
+#                         cutoff = 2)
 #  mesh$crs <- st_crs(proj)
 #  
 #  ggplot() +
@@ -69,6 +70,9 @@ knitr::opts_chunk$set(
 #                        prior.sigma = c(1, 0.1))
 #  
 #  pointsModel <- fitISDM(points, options = list(control.inla = list(int.strategy = 'eb')))
+#  
+
+## ----p and p, fig.width=7, fig.height=5---------------------------------------
 #  
 #  pointsPredictions <- predict(pointsModel, mask = boundary,
 #                               mesh = mesh, predictor = TRUE)
@@ -102,6 +106,8 @@ knitr::opts_chunk$set(
 #  
 #  marksModel <- fitISDM(marks, options = list(control.inla = list(int.strategy = 'eb'),
 #                                               safe = TRUE))
+
+## ----p and p 2,fig.width=7, fig.height=5--------------------------------------
 #  
 #  foodPredictions <- predict(marksModel, mask = boundary,
 #                             mesh = mesh, marks = 'food', spatial = TRUE,
@@ -112,6 +118,7 @@ knitr::opts_chunk$set(
 #  
 #  plot(foodPredictions, variable = c('mean', 'sd'))
 #  plot(koalaPredictions, variable = c('mean', 'sd'))
+#  
 
 ## ----marks_add_scaling,fig.width=7, fig.height=5------------------------------
 #  

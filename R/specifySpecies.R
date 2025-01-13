@@ -295,11 +295,10 @@ specifySpecies <- R6::R6Class(classname = 'specifySpecies', lock_objects = FALSE
     
     if (!is.null(private$temporalName)) {
       
-      if (shareModel) private$Components <- c(private$Components, paste0('sharedBias_biasField(main = geometry, model = sharedBias_bias_field, group =', private$temporalName,', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
-      
       temporalModel <- deparse1(temporalModel)
       
-      private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      if (shareModel) private$Components <- c(private$Components, paste0('sharedBias_biasField(main = geometry, model = sharedBias_bias_field, group =', private$temporalName,', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      else private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
       
       
     }
@@ -1138,7 +1137,7 @@ specifySpecies <- R6::R6Class(classname = 'specifySpecies', lock_objects = FALSE
   #' @param datasetName Name of the dataset for the samplers.
   #' @param Samplers A \code{Spatial*} object representing the integration domain.
   #' @return New samplers for a process.
-  #' @example
+  #' @examples
   #' \dontrun{
   #'  if (requireNamespace('INLA')) {
   #'    
@@ -1179,7 +1178,7 @@ specifySpecies <- R6::R6Class(classname = 'specifySpecies', lock_objects = FALSE
   #' @param speciesIntercepts Prior distribution for precision parameter for the random species intercept term. Defaults to \code{INLA}'s default choice.
   #' @param speciesGroup Prior distribution for the precision parameter for the iid group model. Defaults to \code{INLA}'s default.
   #'   #' @return An updated component list. 
-  #' @example
+  #' @examples
   #' \dontrun{
   #'  if (requireNamespace('INLA')) {
   #'    
@@ -1360,7 +1359,7 @@ specifySpecies$set('private', 'originalNames', NULL)
 #' @description Initialize function for specifySpecies: used to store some compulsory arguments. Please refer to the wrapper function, \code{intModel} for creating new specifySpecies objects.
 #' @param data The points of the model.
 #' @param projection The projection of the data.
-#' @param Inlamesh An inla.mesh object.
+#' @param Inlamesh An \code{fm_mesh_2d} object.
 #' @param initialnames The names of the datasets if data is passed through intModel.
 #' @param responsecounts The name of the response variable for the count data.
 #' @param responsepa The name of the response variable for the presence absence data.
@@ -1388,7 +1387,7 @@ specifySpecies$set('public', 'initialize',  function(data, projection, Inlamesh,
   if (missing(projection)) stop('projection needs to be given.')
   if (missing(Inlamesh)) stop('Mesh needs to be given.')
   
-  if (!inherits(Inlamesh, 'inla.mesh')) stop('Mesh needs to be an inla.mesh object.')
+  if (!inherits(Inlamesh, 'fm_mesh_2d')) stop('Mesh needs to be an fm_mesh_2d object.')
   
   if (!inherits(projection, 'character')) stop('Projection needs to be a character object.')
   
@@ -1417,8 +1416,8 @@ specifySpecies$set('public', 'initialize',  function(data, projection, Inlamesh,
   
   if (is.null(ips)) {
     
-    if (!is.null(boundary)) ips <- st_transform(inlabru::fm_int(samplers = boundary, domain = Inlamesh), projection)
-    else ips <- st_transform(inlabru::fm_int(domain = Inlamesh), projection)
+    if (!is.null(boundary)) ips <- st_transform(fmesher::fm_int(samplers = boundary, domain = Inlamesh), projection)
+    else ips <- st_transform(fmesher::fm_int(domain = Inlamesh), projection)
     
     
   }
@@ -1426,7 +1425,7 @@ specifySpecies$set('public', 'initialize',  function(data, projection, Inlamesh,
   st_geometry(ips) <- 'geometry'
   
   if (!is.null(spatial)) {
-    if (spatial == 'correlate') ips <- fm_cprod(ips, data = data.frame(._dataset_index_var_. = 1:length(initialnames)))
+    if (spatial == 'correlate') ips <- fmesher::fm_cprod(ips, data = data.frame(._dataset_index_var_. = 1:length(initialnames)))
   }  
   private$IPS <- ips
   
@@ -1674,86 +1673,158 @@ specifySpecies$set('private', 'addData', function(dataList, responseCounts, resp
   ##MAKE THIS A FUNCTION TOO
   if (!is.null(private$spatcovsNames)) {
     
-    for (data in names(pointData$Data)) {
-      
-      for (species in 1:length(pointData$Data[[data]])) {
-        
-        for (cov in private$spatcovsNames) {
-          
-          if (!is.null(private$biasFormula)) {
-
-            if (cov %in% labels(terms(private$biasFormula))) covIndex <- cov
-          else 
-            if (!is.null(private$speciesName) && private$speciesEnvironment) covIndex <- paste0(pointData$SpeciesInData[[data]][species],'_', cov)
-            else covIndex <- cov
-          }
-          else
-            if (!is.null(private$speciesName) && private$speciesEnvironment) covIndex <- paste0(pointData$SpeciesInData[[data]][species],'_', cov)
-            else covIndex <- cov
-          
-          pointData$Data[[data]][[species]][[covIndex]] <- inlabru::eval_spatial(where = pointData$Data[[data]][[species]], 
-                                                                                 data = get('spatialcovariates', 
-                                                                                            envir = private$spatcovsEnv)[cov],
-                                                                                 layer = cov)
-          
-          if (any(is.na(pointData$Data[[data]][[species]][[covIndex]]))) {
-            
-            pointData$Data[[data]][[species]][[covIndex]] <- inlabru::bru_fill_missing(where = pointData$Data[[data]][[species]], 
-                                                                                       data = get('spatialcovariates', 
-                                                                                                  envir = private$spatcovsEnv)[cov],
-                                                                                       layer = cov,
-                                                                                       values = pointData$Data[[data]][[species]][[covIndex]])
-            
-          }
-          
-          
+    # identify columns in each dataframe in list
+    dataColNames <- lapply(pointData$Data, function(x) lapply(x, names))
+    # identify usage of spatial covariates in model
+    allCovs <- names(get('spatialcovariates',envir = private$spatcovsEnv))
+    biasCovs <- if(is.null(private$biasFormula)) NULL else labels(terms(private$biasFormula))
+    modelCovs <- allCovs[! allCovs %in% biasCovs]
+    # merge all data
+    fullGeom <- dplyr::bind_rows(lapply(pointData$Data, dplyr::bind_rows))
+    # annotate all environmental data
+    fullGeomCovs <- terra::extract(get('spatialcovariates',envir = private$spatcovsEnv), fullGeom, ID = FALSE)
+    # fill in missing values
+    if(any(is.na(fullGeomCovs))){
+      naRows <- lapply(fullGeomCovs, function(x) which(is.na(x)))  # identify missing rows
+      naCovs <- names(naRows)[sapply(naRows, length) > 0]  # identify covs with missing data
+      for(cov in naCovs){  # fill missing values for rows/covs using nearest neighbour 
+        fullGeomCovs[naRows[[cov]], cov] <- 
+          nearestValue(matrix(st_coordinates(fullGeom[naRows[[cov]],])[,c("X","Y")], ncol = 2), 
+                       get('spatialcovariates', envir = private$spatcovsEnv)[cov])
+        # out <- inlabru::bru_fill_missing(where = fullGeom[naRows[[cov]],], 
+        #     data = get('spatialcovariates', 
+        #             envir = private$spatcovsEnv)[cov],
+        #     layer = cov,
+        #     values = rep(NA, length(naRows[[cov]])))
+      }
+    }
+    # combine with rest of data
+    fullGeom <- cbind(fullGeom, fullGeomCovs) 
+    # split by dataset 
+    splitVar <-split(fullGeom, factor(fullGeom$._dataset_index_var_., levels = unique(fullGeom$._dataset_index_var_.)))
+    names(splitVar) <- names(pointData$Data)
+    # split by species & update columns
+    splitVar <- lapply(splitVar, function(x){
+      # split by species name
+      xSplit <- split(x, factor(x[[paste0(private$speciesName,'INDEX_VAR')]], levels = unique(x[[paste0(private$speciesName,'INDEX_VAR')]])))
+      ds <- names(dataColNames)[x$._dataset_index_var_.[1]]
+      # for each species, update names of covariates
+      xSplit <- lapply(xSplit, function(x2){
+        # drop irrelevant occurence columns
+        colsKeep <- dataColNames[[ds]][[paste0(ds, "_", x2[[paste0(private$speciesName,'INDEX_VAR')]][1])]]
+        x2 <- x2[,c(colsKeep, allCovs)]
+        # update cov names
+        if (!is.null(private$speciesName) && private$speciesEnvironment) {
+          dfNames <- names(x2)
+          dfNames[dfNames %in% modelCovs] <- paste0(x2[[paste0(private$speciesName,'INDEX_VAR')]][1],'_', dfNames[dfNames %in% modelCovs])
+          # update cov names
+          names(x2) <- dfNames
         }
-        
-    
+        # return
+        return(x2)
+      })
+      # update list name
+      names(xSplit) <- names(dataColNames[[ds]])
+      # return
+      return(xSplit)
+    })
+    pointData$Data <- splitVar
+    # annotate integration mesh
     if (!is.null(private$IPS)) {
-      
-      for (covIPS in private$spatcovsNames) {
-     
-        if (!is.null(private$biasFormula)) {
-          
-          if (covIPS %in% labels(terms(private$biasFormula))) covIPSindex <- covIPS
-          else 
-            if (!is.null(private$speciesName) && private$speciesEnvironment) covIPSindex <- paste0(pointData$SpeciesInData[[data]][species],'_', covIPS)
-            else covIPSindex <- covIPS
-        }
-        else
-          if (!is.null(private$speciesName) && private$speciesEnvironment) covIPSindex <- paste0(unique(unlist(private$speciesIn)), '_', covIPS)
-          else covIPSindex <- covIPS
-        
-        for (covADD in covIPSindex) {
-          
-          private$IPS[[covADD]] <- inlabru::eval_spatial(where =  private$IPS, 
-                                                         data = get('spatialcovariates', 
-                                                                    envir = private$spatcovsEnv)[covIPS],
-                                                         layer = covIPS
-          )
-          
-          if (any(is.na(private$IPS[[covADD]]))) {
-            
-            private$IPS[[covADD]] <- inlabru::bru_fill_missing(where = private$IPS, 
-                                                               data = get('spatialcovariates', 
-                                                                          envir = private$spatcovsEnv)[covIPS],
-                                                               layer = covIPS,
-                                                               values = private$IPS[[covADD]])
-            
-          }
-          
+      # annotate all environmental data
+      meshCovs <- terra::extract(get('spatialcovariates',envir = private$spatcovsEnv),
+                                 private$IPS, ID = FALSE)
+      # fill in missing values
+      if(any(is.na(meshCovs))){
+        naRows <- lapply(meshCovs, function(x) which(is.na(x)))  # identify missing rows
+        naCovs <- names(naRows)[sapply(naRows, length) > 0]  # identify covs with missing data
+        for(cov in naCovs){  # fill missing values for rows/covs using nearest neighbour 
+          meshCovs[naRows[[cov]], cov] <- 
+            nearestValue(matrix(st_coordinates(private$IPS[naRows[[cov]],])[,c("X","Y")], ncol = 2), 
+                         get('spatialcovariates', envir = private$spatcovsEnv)[cov])
         }
         
         
       }
       
-      
-    }
-        
+      # define mesh cov names
+      if (!is.null(private$speciesName) && private$speciesEnvironment) {
+        # identify unique species
+        speciesIn <- unique(unlist(private$speciesIn))
+        # expand meshCovs
+        meshCovs <- meshCovs[c(biasCovs, rep(modelCovs, length(speciesIn)))]
+        # update names
+        names(meshCovs) <- c(biasCovs, paste0(rep(speciesIn, each = length(modelCovs)), "_", rep(modelCovs, length(speciesIn))))
       }
+      # combine 
+      private$IPS <- cbind(private$IPS, meshCovs)
     }
     
+    # for (data in names(pointData$Data)) {
+    
+    #   for (species in 1:length(pointData$Data[[data]])) {
+    
+    #     for (cov in private$spatcovsNames) {
+    
+    #       if (!is.null(private$biasFormula)) {
+    
+    #         if (cov %in% labels(terms(private$biasFormula))) covIndex <- cov
+    #         else 
+    #           if (!is.null(private$speciesName) && private$speciesEnvironment) covIndex <- paste0(pointData$SpeciesInData[[data]][species],'_', cov)
+    #           else covIndex <- cov
+    #       }
+    #       else
+    #         if (!is.null(private$speciesName) && private$speciesEnvironment) covIndex <- paste0(pointData$SpeciesInData[[data]][species],'_', cov)
+    #         else covIndex <- cov
+    #       pointData$Data[[data]][[species]][[covIndex]] <- 
+    #         inlabru::eval_spatial(where = pointData$Data[[data]][[species]], 
+    #             data = get('spatialcovariates', 
+    #                         envir = private$spatcovsEnv)[cov],
+    #             layer = cov)
+    #         if (any(is.na(pointData$Data[[data]][[species]][[covIndex]]))) {
+    #           pointData$Data[[data]][[species]][[covIndex]] <- 
+    #             inlabru::bru_fill_missing(where = pointData$Data[[data]][[species]], 
+    #                 data = get('spatialcovariates', 
+    #                         envir = private$spatcovsEnv)[cov],
+    #                 layer = cov,
+    #                 values = pointData$Data[[data]][[species]][[covIndex]])
+    
+    #         }
+    #     }
+    
+    #     if (!is.null(private$IPS)) {
+    #       for (covIPS in private$spatcovsNames) {
+    
+    #         if (!is.null(private$biasFormula)) {
+    
+    #           if (covIPS %in% labels(terms(private$biasFormula))) covIPSindex <- covIPS
+    #           else 
+    #             if (!is.null(private$speciesName) && private$speciesEnvironment) covIPSindex <- paste0(pointData$SpeciesInData[[data]][species],'_', covIPS)
+    #             else covIPSindex <- covIPS
+    #         }
+    #         else
+    #           if (!is.null(private$speciesName) && private$speciesEnvironment) covIPSindex <- paste0(unique(unlist(private$speciesIn)), '_', covIPS)
+    #           else covIPSindex <- covIPS
+    
+    #           for (covADD in covIPSindex) {
+    #             private$IPS[[covADD]] <- inlabru::eval_spatial(where =  private$IPS, 
+    #                                                            data = get('spatialcovariates', 
+    #                                                                       envir = private$spatcovsEnv)[covIPS],
+    #                                                            layer = covIPS
+    #             )
+    
+    #             if (any(is.na(private$IPS[[covADD]]))) {
+    #               private$IPS[[covADD]] <- inlabru::bru_fill_missing(where = private$IPS, 
+    #                                                                  data = get('spatialcovariates', 
+    #                                                                             envir = private$spatcovsEnv)[covIPS],
+    #                                                                  layer = covIPS,
+    #                                                                  values = private$IPS[[covADD]])
+    #             }
+    #           }
+    #       }
+    #     }
+    #   }
+    # }
   }
   
   
@@ -1857,7 +1928,10 @@ specifySpecies$set('private', 'spatialCovariates', function(spatialCovariates) {
   #if (class(spatialCovariates) %in% c('RasterLayer', 'RasterBrick', 'RasterStack')) objSpat <- terra::rast(spatialCovariates)
   
   if (inherits(spatialCovariates, 'Spatial')) covsClass <- sapply(spatialCovariates@data, class)
-  else if (inherits(spatialCovariates, 'SpatRaster')) covsClass <- sapply(as.data.frame(spatialCovariates), class)
+  #   else if (inherits(spatialCovariates, 'SpatRaster')) covsClass <- sapply(seq(spatialCovariates[1]), function(x){
+  #         class(unlist(spatialCovariates[[x]][,1]))
+  #     }) |> setNames(names(spatialCovariates))
+  else if (inherits(spatialCovariates, 'SpatRaster')) covsClass <- sapply(spatialCovariates[1], class)
   else covsClass <- sapply(as.data.frame(terra::rast(spatialCovariates)), class)
   
   

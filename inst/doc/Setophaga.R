@@ -2,7 +2,8 @@
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = FALSE,
+  fig.width=8, fig.height=5
 )
 
 
@@ -44,13 +45,12 @@ library(PointedSDMs)
 #  library(USAboundaries)
 #  library(sf)
 #  library(blockCV)
-#  library(ggmap)
+#  library(ggplot2)
 #  library(sn)
 #  library(terra)
 #  library(RColorBrewer)
 #  library(cowplot)
 #  library(knitr)
-#  library(kableExtra)
 #  library(dplyr)
 #  library(spocc)
 #  
@@ -103,8 +103,13 @@ library(PointedSDMs)
 
 ## ----Covariate data, message = FALSE, warning = FALSE-------------------------
 #  
-#  covariates <- scale(terra::rast(system.file('extdata/SetophagaCovariates.tif',
-#                                        package = "PointedSDMs")))
+#  covariates <- terra::rast(system.file('extdata/SetophagaCovariates.tif',
+#                                        package = "PointedSDMs"))
+#  
+#  values(covariates$PA_lc_NLCD_2011_Tree_Canopy_L48_nlcd)[is.na(values(covariates$PA_lc_NLCD_2011_Tree_Canopy_L48_nlcd))] <- 0
+#  
+#  covariates <- scale(covariates)
+#  
 #  names(covariates) <- c('elevation', 'canopy')
 #  
 #  plot(covariates)
@@ -112,11 +117,11 @@ library(PointedSDMs)
 
 ## ----Mesh, warning = FALSE, message = FALSE, fig.width=8, fig.height=5--------
 #  
-#  mesh <- inla.mesh.2d(boundary = inla.sp2segment(PA),
-#                       cutoff = 0.2 * 5,
-#                       max.edge = c(0.1, 0.24) * 40, #120
-#                       offset = c(0.1, 0.4) * 100,
-#                       crs = st_crs(proj))
+#  mesh <- fm_mesh_2d_inla(boundary = inla.sp2segment(PA),
+#                          cutoff = 0.2 * 5,
+#                          max.edge = c(0.1, 0.24) * 80, #40 #120
+#                          offset = c(0.1, 0.4) * 100,
+#                          crs = st_crs(proj))
 #  
 #  mesh_plot <- ggplot() +
 #               gg(mesh) +
@@ -129,8 +134,8 @@ library(PointedSDMs)
 ## ----modelOptions-------------------------------------------------------------
 #  
 #  modelOptions <- list(control.inla =
-#                         list(int.strategy = 'eb',
-#                              diagonal = 0.1),
+#                         list(int.strategy = 'ccd',
+#                              cmin = 0),
 #                              verbose = TRUE,
 #                              safe = TRUE)
 #  
@@ -145,7 +150,7 @@ library(PointedSDMs)
 #                            spatialCovariates = covariates,
 #                            Formulas =
 #                            list(
-#            covariateFormula = ~ elevation + I(elevation^2) + canopy + I(canopy^2))
+#            covariateFormula = ~ elevation*canopy)
 #                               )
 #  
 
@@ -165,24 +170,25 @@ library(PointedSDMs)
 ## ----specifySpatial-----------------------------------------------------------
 #  
 #  caerulescensModel$specifySpatial(sharedSpatial = TRUE,
-#                                   prior.sigma = c(1, 0.1),
-#                                   prior.range = c(15, 0.1))
+#                                   constr = TRUE,
+#                                   prior.sigma = c(0.1, 0.05),
+#                                   prior.range = c(200, 0.1))
 #  
 
-## ----bias fields, eval = FALSE------------------------------------------------
+## ----bias fields--------------------------------------------------------------
 #  
 #  caerulescensModel$addBias(datasetNames = 'eBird_caerulescens')
 #  
 #  caerulescensModel$specifySpatial(Bias = TRUE,
-#                                   prior.sigma = c(1, 0.1),
-#                                   prior.range = c(15, 0.1))
+#                                   prior.sigma = c(0.1, 0.05),
+#                                   prior.range = c(120, 0.1))
 #  
 
 ## ----priorsFixed--------------------------------------------------------------
 #  
 #  caerulescensModel$priorsFixed(Effect = 'Intercept',
 #                                mean.linear = 0,
-#                                prec.linear = 0.1)
+#                                prec.linear = 1)
 #  
 
 ## ----changeComponents---------------------------------------------------------
@@ -196,11 +202,14 @@ library(PointedSDMs)
 #  
 #  caerulescensModel$changeComponents()
 #  
+#  
 
 ## ----fitISDM run--------------------------------------------------------------
 #  
 #  caerulescensEst <- fitISDM(data = caerulescensModel,
 #                     options = modelOptions)
+#  
+#  summary(caerulescensEst)
 #  
 
 ## ----predict and plot---------------------------------------------------------
@@ -209,15 +218,25 @@ library(PointedSDMs)
 #                                     data = fm_pixels(mesh = mesh,
 #                                                      mask = PA),
 #                                     spatial = TRUE,
-#                                     n.samples = 1000)
+#                                     n.samples = 100)
 #  
 #  plot(caerulescensPredictions, variable = c('mean', 'sd'))
+#  
+#  caerulescensBias <- predict(caerulescensEst,
+#                                     data = fm_pixels(mesh = mesh,
+#                                                      mask = PA),
+#                                     bias = TRUE,
+#                                     n.samples = 100)
+#  
+#  plot(caerulescensBias, variable = c('mean', 'sd'))
+#  
 #  
 #  
 
 ## ----startSpeciesStart--------------------------------------------------------
 #  
-#  speciesModel <- startSpecies(dataSets, Boundary = PA, pointsSpatial = NULL,
+#  speciesModel <- startSpecies(dataSets, Boundary = PA,
+#                               pointsSpatial = NULL,
 #                               Projection = proj, Mesh = mesh,
 #                               responsePA = 'NPres', responseCounts = 'Counts',
 #                               spatialCovariates = covariates,
@@ -231,26 +250,34 @@ library(PointedSDMs)
 
 ## ----specifySpecies-----------------------------------------------------------
 #  
-#  speciesModel$specifySpatial(Species  = TRUE,
-#                              prior.sigma = c(1, 0.1),
-#                              prior.range = c(15, 0.1))
+#  speciesModel$specifySpatial(Species = TRUE,
+#                              constr = TRUE,
+#                              prior.sigma = c(0.01, 0.05),
+#                              prior.range = c(100, 0.1))
 #  
 #  speciesModel$priorsFixed(Effect = 'Intercept',
 #                           mean.linear = 0,
-#                           prec.linear = 0.1)
+#                           prec.linear = 1)
 #  
 #  speciesModel$specifyRandom(speciesGroup = list(model = "iid",
-#                                                 hyper = list(prec = list(prior = "pc.prec",
-#                                                 param = c(0.1, 0.1)))),
-#                             speciesIntercepts = list(prior = 'pc.prec',
-#                                                      param = c(0.1, 0.1)))
-#  
+#                                                 hyper = list(
+#                                                   prec = list(
+#                                                   initial = log(1),
+#                                                   fixed = TRUE
+#                                                   ))),
+#                             speciesIntercepts = list(
+#                               initial = log(1), fixed  = TRUE
+#                             ))
 #  
 
 ## ----fitSpecies---------------------------------------------------------------
 #  
+#  modelOptionsSpecies <- modelOptions
+#  modelOptionsSpecies$control.inla$h <- 5e-4
+#  modelOptionsSpecies$control.inla$tolerance <- 5e-5
+#  
 #  speciesEst <- fitISDM(data = speciesModel,
-#                        options = modelOptions)
+#                        options = modelOptionsSpecies)
 #  
 #  summary(speciesEst)
 #  
@@ -261,17 +288,18 @@ library(PointedSDMs)
 #                                     data = fm_pixels(mesh = mesh,
 #                                                      mask = PA),
 #                                     spatial = TRUE,
-#                                     n.samples = 1000)
+#                                     n.samples = 100)
 #  
 #  plot(speciesPredictions)
 #  
 
 ## ----spatialBlock, warning = FALSE, message = FALSE,  fig.width=8, fig.height=5----
 #  
-#  caerulescensModel$spatialBlock(k = 2, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
+#  caerulescensModel$spatialBlock(k = 4, rows_cols = c(50, 50),
+#                                 plot = TRUE, seed = 123) + theme_bw()
 #  
 
-## ----blockedCV, warning = FALSE, eval = FALSE---------------------------------
+## ----blockedCV, warning = FALSE-----------------------------------------------
 #  
 #  spatialBlocked <- blockedCV(data = caerulescensModel,
 #                              options = modelOptions)
@@ -284,16 +312,22 @@ library(PointedSDMs)
 
 ## ----No fields model, message = FALSE, warning = FALSE------------------------
 #  
-#  no_fields <- startISDM(dataSets,
+#  no_fields <- startISDM(caerulescensData,
 #                        pointsSpatial = NULL,
+#                        Boundary = PA,
 #                        Projection = proj, Mesh = mesh,
 #                        responsePA = 'NPres', responseCounts = 'Counts',
-#                        spatialCovariates = covariates)
+#                        spatialCovariates = covariates,
+#                        Formulas =
+#                            list(
+#            covariateFormula = ~ elevation*canopy)
+#            )
 #  
-#  no_fields$spatialBlock(k = 2, rows_cols = c(2, 2), plot = TRUE) + theme_bw()
+#  no_fields$spatialBlock(k = 4, rows_cols = c(50, 50),
+#                         plot = TRUE, seed = 123) + theme_bw()
 #  
 
-## ----spatialBlocked_no_fields, eval = FALSE-----------------------------------
+## ----spatialBlocked_no_fields-------------------------------------------------
 #  
 #  spatialBlocked_no_fields <- blockedCV(data = no_fields,
 #                                        options = modelOptions)
@@ -304,36 +338,7 @@ library(PointedSDMs)
 #  spatialBlocked_no_fields
 #  
 
-## ----Summary of model, message = FALSE, warning = FALSE, echo = TRUE,fig.width=7, fig.height=5----
-#  
-#  results_plot <- joint_model$summary.fixed %>%
-#                  mutate(species = gsub('_.*$','',
-#                                        row.names(joint_model$summary.fixed))) %>%
-#                  mutate(coefficient = row.names(joint_model$summary.fixed))
-#  
-#  
-#  coefficient_plot <- ggplot(results_plot, aes(x = coefficient, y = mean)) +
-#                      geom_hline(yintercept = 0, colour = grey(0.25), lty = 2) +
-#                      geom_point(aes(x = coefficient,
-#                                     y = mean)) +
-#                      geom_linerange(aes(x = coefficient,
-#                                         ymin = `0.025quant`,
-#                                         ymax = `0.975quant`,
-#                                         col = species),
-#                                         lwd = 1) +
-#                                         theme_bw() +
-#                      scale_colour_manual(values = c('#003f5c', '#bc5090','#ffa600')) +
-#                      theme(legend.position="bottom",
-#                      plot.title = element_text(hjust = 0.5)) +
-#                      ggtitle("95% credibility intervals of the fixed effects\n
-#                              for the three studied species") +
-#                      labs(x = 'Variable', y = 'Coefficient value') +
-#                      coord_flip()
-#  
-#  coefficient_plot
-#  
-
-## ----Leave one out, message = FALSE, warning = FALSE, eval = FALSE------------
+## ----Leave one out, message = FALSE, warning = FALSE--------------------------
 #  
 #  dataset_out <- datasetOut(model = caerulescensEst,
 #                            dataset = "BBA",

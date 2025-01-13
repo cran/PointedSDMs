@@ -2,6 +2,8 @@
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+  warning = FALSE,
+  message = FALSE,
   eval = FALSE
 )
 
@@ -10,7 +12,6 @@ knitr::opts_chunk$set(
 #  
 #  library(PointedSDMs)
 #  library(terra)
-#  library(ggpolypath)
 #  library(INLA)
 #  library(ggplot2)
 #  
@@ -29,7 +30,7 @@ knitr::opts_chunk$set(
 #                                        package = "PointedSDMs"))
 #  
 #  datasets <- SolitaryTinamou$datasets
-#  region <- SolitaryTinamou$region
+#  region <- st_as_sf(SolitaryTinamou$region)
 #  mesh <- SolitaryTinamou$mesh
 #  
 
@@ -53,7 +54,7 @@ knitr::opts_chunk$set(
 
 ## ----set up base model, warning = FALSE, message = FALSE----------------------
 #  
-#  base <- startISDM(datasets, spatialCovariates = covariates,
+#  base <- startISDM(datasets, spatialCovariates = covariates, Boundary = region,
 #                   Projection = projection, responsePA = 'Present', Offset = 'area',
 #                   Mesh = mesh, pointsSpatial = NULL)
 #  
@@ -78,54 +79,68 @@ knitr::opts_chunk$set(
 
 ## ----set up model with fields, warning = FALSE, message = FALSE---------------
 #  
-#  fields <- startISDM(datasets, spatialCovariates = covariates,
-#                     Projection = projection, Mesh = mesh, responsePA = 'Present',
-#                     pointsIntercept = FALSE)
+#  fields <- startISDM(datasets, spatialCovariates = covariates, Boundary = region,
+#                     Projection = projection, Mesh = mesh, responsePA = 'Present')
+#  
+#  fields$priorsFixed(Effect = 'Intercept', prec.linear = 1)
+#  
+#  for (cov in names(covariates)) fields$priorsFixed(Effect = cov, prec.linear = 1)
 #  
 
 ## ----specifySpatial-----------------------------------------------------------
 #  
-#  fields$specifySpatial(sharedSpatial = TRUE, prior.range = c(50,0.01),
-#                        prior.sigma = c(0.1, 0.01))
-#  
-
-## ----addBias------------------------------------------------------------------
-#  
-#  fields$addBias('eBird')
+#  fields$specifySpatial(sharedSpatial = TRUE,
+#                        constr = TRUE,
+#                        prior.range = c(3, 0.1),
+#                        prior.sigma = c(1, 0.1))
 #  
 
 ## ----run fields model, warning = FALSE, message = FALSE-----------------------
 #  
-#  fieldsModel <- fitISDM(fields, options = list(control.inla = list(int.strategy = 'eb',
-#                                                                    diagonal = 0.05)))
+#  fieldsModel <- fitISDM(fields, options = list(control.inla =
+#                                                  list(int.strategy = 'eb')))
 #  summary(fieldsModel)
 #  
 
 ## ----correlate model----------------------------------------------------------
 #  
-#  correlate <- startISDM(datasets,
+#  correlate <- startISDM(datasets, Boundary = region,
 #                   Projection = projection, Mesh = mesh,
+#                   spatialCovariates = covariates$Altitude,
 #                   responsePA = 'Present',
 #                   pointsSpatial = 'correlate')
 #  
-#  correlate$specifySpatial(sharedSpatial = TRUE, prior.range = c(50,0.01),
-#                        prior.sigma = c(0.1, 0.01))
+#  correlate$priorsFixed(Effect = 'Intercept', prec.linear = 1)
+#  
+#  correlate$priorsFixed(Effect = 'Altitude', prec.linear = 1)
+#  
+#  correlate$specifySpatial(sharedSpatial = TRUE,
+#                           prior.range = c(3, 0.1),
+#                           prior.sigma = c(1, 0.1))
 #  
 #  correlate$changeComponents()
+#  
+
+## ----addBias------------------------------------------------------------------
+#  
+#  correlate$addBias('eBird')
+#  
+#  correlate$specifySpatial(Bias = TRUE,
+#                        prior.range = c(2, 0.1),
+#                        prior.sigma = c(0.1, 0.1))
 #  
 
 ## ----run correlate model------------------------------------------------------
 #  
 #  correlateModel <- fitISDM(correlate,
 #                            options = list(control.inla =
-#                                             list(int.strategy = 'eb',
-#                                                  diagonal = 0.1)))
+#                                             list(int.strategy = 'eb')))
 #  summary(correlateModel)
 #  
 
 ## ----predict spatial, warning = FALSE, message = FALSE------------------------
 #  
-#  spatial_predictions <- predict(fieldsModel, mesh = mesh,
+#  spatial_predictions <- predict(correlateModel, mesh = mesh,
 #                         mask = region,
 #                         spatial = TRUE,
 #                         fun = 'linear')
@@ -138,7 +153,7 @@ knitr::opts_chunk$set(
 
 ## ----predict bias, warning = FALSE, message = FALSE---------------------------
 #  
-#  bias_predictions <- predict(fieldsModel,
+#  bias_predictions <- predict(correlateModel,
 #                      mesh = mesh,
 #                      mask = region,
 #                      bias = TRUE,
@@ -152,7 +167,7 @@ knitr::opts_chunk$set(
 
 ## ----datasetOut, warning = FALSE, message = FALSE-----------------------------
 #  
-#  eBird_out <- datasetOut(model = fieldsModel, dataset = 'eBird')
+#  eBird_out <- datasetOut(model = correlateModel, dataset = 'eBird')
 #  
 
 ## ----print datasetOut---------------------------------------------------------

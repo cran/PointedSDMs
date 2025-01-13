@@ -53,7 +53,7 @@ blockedCV <- function(data, options = list(),
   
   if (!inherits(data, 'dataSDM') && !inherits(data, 'specifySpecies') && !inherits(data, 'specifyISDM')) stop('data needs to be a dataSDM object.')
   
-  if (is.null(data$.__enclos_env__$private$INLAmesh)) stop('An inla.mesh object is required before any model is run.')
+  if (is.null(data$.__enclos_env__$private$INLAmesh)) stop('An fm_mesh_2d object is required before any model is run.')
   
   if (!data$.__enclos_env__$private$blockedCV) stop('Please use ".$spatialBlock" before using this function.')
   
@@ -226,12 +226,12 @@ blockedCV <- function(data, options = list(),
         
         if (!is.null(data$.__enclos_env__$private$speciesSpatial)) {
           
-        if (data$.__enclos_env__$private$speciesSpatial == 'replicate') ips <- fm_cprod(ips, data.frame(speciesSpatialGroup = 1:max(data$.__enclos_env__$private$speciesTable$index)))
+        if (data$.__enclos_env__$private$speciesSpatial == 'replicate') ips <- fmesher::fm_cprod(ips, data.frame(speciesSpatialGroup = 1:max(data$.__enclos_env__$private$speciesTable$index)))
         
         }
         if (!is.null(data$.__enclos_env__$private$Intercepts)) {
           
-          if (data$.__enclos_env__$private$speciesIntercepts) ips <- fm_cprod(ips, data.frame(specIntTermRem = 1:max(data$.__enclos_env__$private$speciesTable$index)))
+          if (data$.__enclos_env__$private$speciesIntercepts) ips <- fmesher::fm_cprod(ips, data.frame(specIntTermRem = 1:max(data$.__enclos_env__$private$speciesTable$index)))
           names(ips)[names(ips) == 'specIntTermRem'] <- data$.__enclos_env__$private$speciesName
         }
       } 
@@ -240,8 +240,8 @@ blockedCV <- function(data, options = list(),
                                 include = formula_terms, E = ips$weight,
                     family = 'poisson', data = ips)
       
-      trainLiks[['ips']] <- ipsLike
-      uFam <- TRUE
+      # trainLiks[['ips']] <- ipsLike
+      uFam <- FALSE
     } else uFam <- FALSE
       
     } else uFam <- FALSE
@@ -343,7 +343,60 @@ blockedCV <- function(data, options = list(),
           #Remove bias
           covInPres <- formula_terms
           covInPres <- covInPres[!covInPres %in% biasFormlabels]
-          covInPres <- covInPres[!covInPres %in% grepl('_biasField', covInPres)]
+          covInPres <- covInPres[!grepl('_biasField', covInPres)]
+          
+          if (sum(grepl('_spatial', covInPres)) > 1) {
+            
+            spatIn <- covInPres[grepl('_spatial', covInPres)]
+            if (paste0(predictName,'_spatial') %in% spatIn) covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% predictName],'_spatial')]
+            else {
+              if (any(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse] %in% c('poisson', 'binomial'))) {
+                
+                keepSpat <- unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse] %in% c('poisson', 'binomial')
+                keepSpat <- names(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse])[keepSpat][1]
+                covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% keepSpat],'_spatial')]
+                
+              } else {
+                
+                keepSpat <- names(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse])[1]
+                covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% keepSpat],'_spatial')]
+                
+              }
+              
+            }
+            
+          }
+          
+          if (sum(grepl('_intercept', covInPres)) > 1) {
+            
+            intInt <- covInPres[grepl('_intercept', covInPres)]
+            if (paste0(predictName,'_intercept') %in% intInt)covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% predictName],'_intercept')]
+            else {
+              if (any(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse] %in% c('poisson', 'binomial'))) {
+                
+                keepInt <- unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse] %in% c('poisson', 'binomial')
+                keepInt <- names(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse])[keepInt][1]
+                covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% keepInt],'_intercept')]
+                
+              } else {
+                
+                keepInt <- names(unlist(data$.__enclos_env__$private$Family)[names(data$.__enclos_env__$private$Family) %in% dataToUse])[1]
+                covInPres <- covInPres[!covInPres %in% paste0(dataToUse[!dataToUse%in% keepInt],'_intercept')]
+                
+              }
+              
+            }
+            
+          }
+          ##grepl(_spatial, covInPres) <- if bigger than 1 <- then keep only predict and PA/Counts BUT KEEP shared_spatial
+          ##grepl(_intercept, covInPres) <- then keep only predict and PA/Counts
+
+          #if not shared spatial
+          #Select predData intercept
+          #Else if not in, select first non PO
+          #Else select PO
+          
+          #Same for intercept
           
         if (!is.null(data$.__enclos_env__$private$speciesName)) {
           
@@ -377,6 +430,7 @@ blockedCV <- function(data, options = list(),
           }
           
         }
+            
           #if bias
           
         #covInPres <- intersect(oldIn[[pd]], formula_terms)
@@ -402,7 +456,7 @@ blockedCV <- function(data, options = list(),
         
         optionsTest <- append(options, foldOptions)
         compsIntercepts <- paste0('testIntercept', 1:length(testData[[1]]),'(1)')
-        compPreds <- formula(paste0('~ - 1 + olikhoodvar(main = olikhoodvar, model = "linear") + ', paste0(compsIntercepts, collapse = ' + ')))
+        compPreds <- formula(paste0('~ - 1 + olikhoodvar(main = olikhoodvar, model = "offset") + ', paste0(compsIntercepts, collapse = ' + ')))
 
         testModel <- try(inlabru::bru(components = compPreds,
                                    testLike, options = optionsTest))

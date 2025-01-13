@@ -254,11 +254,10 @@ specifyISDM <- R6::R6Class(classname = 'specifyISDM', lock_objects = FALSE, clon
     
     if (!is.null(private$temporalName)) {
       
-      if (shareModel) private$Components <- c(private$Components, paste0('sharedBias_biasField(main = geometry, model = sharedBias_bias_field, group =', private$temporalName,', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
-      
       temporalModel <- deparse1(temporalModel)
       
-      private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      if (shareModel) private$Components <- c(private$Components, paste0('sharedBias_biasField(main = geometry, model = sharedBias_bias_field, group =', private$temporalName,', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
+      else private$Components <- c(private$Components, paste0(datasetNames ,'_biasField(main = geometry, model = ', datasetNames, '_bias_field, group = ', private$temporalName, ', ngroup = ', length(unique(unlist(private$temporalVars))),', control.group = ', temporalModel,')'))
       
       
     }
@@ -660,7 +659,7 @@ specifyISDM <- R6::R6Class(classname = 'specifyISDM', lock_objects = FALSE, clon
         if (private$Spatial == 'individual') stop('pointsSpatial specified as "individual" in intModel. Please specify a dataset spatial effect to specify with datasetName.')
       
       
-      if (private$Spatial == 'shared') {
+      if (private$Spatial %in% c('shared', 'correlate')) {
         
         field_type <- 'sharedField'
         if (!Remove) index <- 'sharedField'
@@ -961,7 +960,7 @@ specifyISDM <- R6::R6Class(classname = 'specifyISDM', lock_objects = FALSE, clon
   #' @param datasetName Name of the dataset for the samplers.
   #' @param Samplers A \code{Spatial*} object representing the integration domain.
   #' @return New samplers for a process.
-  #' @example
+  #' @examples
   #' \dontrun{
   #'  if (requireNamespace('INLA')) {
   #'    
@@ -998,7 +997,7 @@ specifyISDM <- R6::R6Class(classname = 'specifyISDM', lock_objects = FALSE, clon
   #' @param copyModel List of model specifications given to the hyper parameters for the \code{"copy"} model. Defaults to \code{list(beta = list(fixed = FALSE))}.
   #' @param copyBias List of model specifications given to the hyper parameters for the \code{"copy"} bias model. Defaults to \code{list(beta = list(fixed = FALSE))}.
   #' @return An updated component list. 
-  #' @example
+  #' @examples
   #' \dontrun{
   #'  if (requireNamespace('INLA')) {
   #'    
@@ -1117,7 +1116,7 @@ specifyISDM$set('private', 'originalNames', NULL)
 
 #' @description Initialize function for specifyISDM: used to store some compulsory arguments. Please refer to the wrapper function, \code{intModel} for creating new specifyISDM objects.
 #' @param projection The projection of the data.
-#' @param Inlamesh An inla.mesh object.
+#' @param Inlamesh An \code{fm_mesh_2d} object.
 #' @param initialnames The names of the datasets if data is passed through intModel.
 #' @param responsecounts The name of the response variable for the count data.
 #' @param responsepa The name of the response variable for the presence absence data.
@@ -1146,7 +1145,7 @@ specifyISDM$set('public', 'initialize',  function(data, projection, Inlamesh, in
   if (missing(projection)) stop('projection needs to be given.')
   if (missing(Inlamesh)) stop('Mesh needs to be given.')
   
-  if (!inherits(Inlamesh, 'inla.mesh')) stop('Mesh needs to be an inla.mesh object.')
+  if (!inherits(Inlamesh, 'fm_mesh_2d')) stop('Mesh needs to be an fm_mesh_2d object.')
   
   if (!inherits(projection, 'character')) stop('Projection needs to be a character object.')
   
@@ -1169,25 +1168,6 @@ specifyISDM$set('public', 'initialize',  function(data, projection, Inlamesh, in
   
   if (!missing(offset)) private$Offset <- offset
   
-  private$pointCovariates <- pointcovariates
-  
-  if (!is.null(spatialcovariates)) private$spatialCovariates(spatialcovariates)
-  
-  if (is.null(ips)) {
-    
-    if (!is.null(boundary)) ips <- st_transform(inlabru::fm_int(samplers = boundary, domain = Inlamesh), projection)
-    else ips <- st_transform(inlabru::fm_int(domain = Inlamesh), projection)
-    
-    
-  }
-  
-  st_geometry(ips) <- 'geometry'
-  
-  if (!is.null(spatial)) {
-  if (spatial == 'correlate') ips <- fm_cprod(ips, data = data.frame(._dataset_index_var_. = 1:length(initialnames)))
-  }
-  private$IPS <- ips
-  
   private$Spatial <- spatial
   private$Intercepts <- intercepts
   
@@ -1196,6 +1176,26 @@ specifyISDM$set('public', 'initialize',  function(data, projection, Inlamesh, in
   
   private$Projection <- projection
   private$INLAmesh <- Inlamesh
+  
+  private$pointCovariates <- pointcovariates
+  
+  if (!is.null(spatialcovariates)) private$spatialCovariates(spatialcovariates)
+  
+  if (is.null(ips)) {
+    
+    if (!is.null(boundary)) ips <- st_transform(fmesher::fm_int(samplers = boundary, domain = Inlamesh), projection)
+    else ips <- st_transform(fmesher::fm_int(domain = Inlamesh), projection)
+    
+    
+  }
+  
+  st_geometry(ips) <- 'geometry'
+  
+  if (!is.null(spatial)) {
+  if (spatial == 'correlate') ips <- fmesher::fm_cprod(ips, data = data.frame(._dataset_index_var_. = 1:length(initialnames)))
+  }
+  private$IPS <- ips
+  
   
   private$addData(dataList = data, responseCounts = responsecounts, 
                   responsePA = responsepa, trialsPA = trialspa,
@@ -1317,6 +1317,18 @@ specifyISDM$set('private', 'addData', function(dataList, responseCounts, respons
                 
                 private$temporalVars <- pointData$timeIndex
                 
+                numTime <- length(unique(unlist(private$temporalVars)))
+                
+                newIPS <- rep(list(private$IPS), numTime)
+                
+                newIPS <- do.call(rbind, newIPS)
+                
+                newIPS[, private$temporalName] <- rep(1:numTime, each = nrow(private$IPS))
+                
+                newIPS <- st_transform(newIPS, private$Projection)
+                
+                private$IPS <- newIPS
+                
               }
               
               ##How does this work?
@@ -1385,6 +1397,8 @@ specifyISDM$set('private', 'addData', function(dataList, responseCounts, respons
                                                                                                         envir = private$spatcovsEnv)[cov],
                                                                                              layer = cov)
                       
+                      if (is.character(pointData$Data[[data]][[species]][[covIndex]])) pointData$Data[[data]][[species]][[covIndex]] <- as.factor(pointData$Data[[data]][[species]][[covIndex]])
+                      
                       if (any(is.na(pointData$Data[[data]][[species]][[covIndex]]))) {
                         
                         pointData$Data[[data]][[species]][[covIndex]] <- inlabru::bru_fill_missing(where = pointData$Data[[data]][[species]], 
@@ -1415,6 +1429,8 @@ specifyISDM$set('private', 'addData', function(dataList, responseCounts, respons
                                                                                 envir = private$spatcovsEnv)[covIPS],
                                                                      layer = covIPS
                       )
+                      
+                      if (is.character(private$IPS[[covADD]])) private$IPS[[covADD]] <- as.factor(private$IPS[[covADD]])
                       
                       if (any(is.na(private$IPS[[covADD]]))) {
                         

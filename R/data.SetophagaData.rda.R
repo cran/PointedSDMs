@@ -29,5 +29,5 @@ NULL
 #' @name BBS
 #' @docType data
 #' @keywords data
-#' @references \url{https://www.pwrc.usgs.gov}
+#' @references \url{https://www.pwrc.usgs.gov/bbs/}
 NULL
